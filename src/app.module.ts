@@ -5,6 +5,8 @@ import { UsersService } from './repositories/stats/gameData.service';
 import { UsersController } from './repositories/stats/gameData.controller';
 import { User } from './repositories/stats/entity/user.entity';
 import * as process from 'process';
+import { AppController } from "./app.controller";
+import { AppService } from "./app.service";
 
 @Module({
   imports: [
@@ -26,7 +28,7 @@ import * as process from 'process';
       }),
     }),
   ],
-  providers: [UsersService],
-  controllers: [UsersController],
+  providers: [UsersService, AppService],
+  controllers: [UsersController, AppController],
 })
 export class AppModule {}
