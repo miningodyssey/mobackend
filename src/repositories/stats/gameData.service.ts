@@ -44,7 +44,7 @@ export class UsersService {
       await this.userRepository.save(refererProfile);
       await this.redis.set(`user:${referer}`, JSON.stringify(refererProfile));
     }
-    console.log(user);
+    console.log(userData);
     if (!user) {
       user = this.userRepository.create({ id: userId, ...restUserData });
       await this.userRepository.save(user);
