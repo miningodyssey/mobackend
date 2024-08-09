@@ -13,13 +13,13 @@ export class UsersService {
     @InjectRedis() private readonly redis: Redis,
   ) {}
 
-  async getUser(userId: string): Promise<User> {
+  async getUser(userId: number): Promise<User> {
     const cachedUser = await this.redis.get(`user:${userId}`);
     if (cachedUser) {
       return JSON.parse(cachedUser);
     }
 
-    const user = await this.userRepository.findOne({ where: { id: Number(userId) } });
+    const user = await this.userRepository.findOne({ where: { id: userId } });
     if (user) {
       await this.redis.set(`user:${userId}`, JSON.stringify(user));
     }
@@ -37,16 +37,13 @@ export class UsersService {
     const { referer, ...restUserData } = userData;
 
     let user = await this.getUser(userId);
-    console.log(userData)
-    if (referer && user.referer == 0) {
-      const refererProfile = await this.getUser(referer);
-      if (referer) {
-        refererProfile.referals += 1;
-        refererProfile.balance = Number(refererProfile.balance) + 50;
-        await this.userRepository.save(refererProfile);
-
-        await this.redis.set(`user:${referer}`, JSON.stringify(refererProfile));
-      }
+    if (referer && (!user || !user.referer)) {
+      const refererProfile = await this.getUser(Number(referer));
+      refererProfile.referals += 1;
+      refererProfile.balance = Number(refererProfile.balance) + 50;
+      console.log(refererProfile.balance);
+      await this.userRepository.save(refererProfile);
+      await this.redis.set(`user:${referer}`, JSON.stringify(refererProfile));
     }
 
     if (!user) {
