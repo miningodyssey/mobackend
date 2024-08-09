@@ -14,8 +14,8 @@ export class User {
   @Column({ default: 0 })
   referals: number;
 
-  @Column({ default: 0 })
-  referer: number;
+  @Column({ default: '0' })
+  referer: string;
 
   @Column({ nullable: true })
   tgUserdata: string;

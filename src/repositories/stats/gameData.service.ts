@@ -13,13 +13,13 @@ export class UsersService {
     @InjectRedis() private readonly redis: Redis,
   ) {}
 
-  async getUser(userId: number): Promise<User> {
+  async getUser(userId: string): Promise<User> {
     const cachedUser = await this.redis.get(`user:${userId}`);
     if (cachedUser) {
       return JSON.parse(cachedUser);
     }
 
-    const user = await this.userRepository.findOne({ where: { id: userId } });
+    const user = await this.userRepository.findOne({ where: { id: Number(userId) } });
     if (user) {
       await this.redis.set(`user:${userId}`, JSON.stringify(user));
     }
@@ -37,7 +37,7 @@ export class UsersService {
     const { referer, ...restUserData } = userData;
 
     let user = await this.getUser(userId);
-
+    console.log(userData)
     if (referer && user.referer == 0) {
       const refererProfile = await this.getUser(referer);
       if (referer) {
