@@ -1,5 +1,4 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
-import { taskAction } from '../interfaces/taskAction.interface';
 
 @Entity()
 export class Task {
@@ -14,9 +13,6 @@ export class Task {
 
   @Column({ nullable: false })
   imageLink: string;
-
-  @Column({ nullable: false })
-  taskAction: taskAction;
 
   @Column({ nullable: false })
   taskLink: string;

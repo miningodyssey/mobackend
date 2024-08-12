@@ -17,6 +17,7 @@ services:
       - DATABASE_USER=your_username
       - DATABASE_PASSWORD=your_password
       - DATABASE_NAME=your_database
+      - JWT_SECRET=${JWT_SECRET}
     env_file:
       - .env
     depends_on:

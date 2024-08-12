@@ -1,12 +1,21 @@
-import { Controller, Get, Param, Post, Body, Put } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  Post,
+  Body,
+  Put,
+  UseGuards,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { User } from './entity/user.entity';
+import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
 
 @Controller('stats')
+@UseGuards(JwtAuthGuard)
 export class UsersController {
   constructor(private readonly gameDataService: UsersService) {}
 
-  // Получение данных пользователя по его ID
   @Get(':id')
   getUser(@Param('id') userId: string): Promise<User> {
     return this.gameDataService.getUser(Number(userId));
