@@ -9,7 +9,7 @@ async function bootstrap() {
     },
   });
   const options = new DocumentBuilder()
-    .setTitle('MiniAds Backend API')
+    .setTitle('MiningOdyssey API')
     .setVersion('1.0')
     .addServer('/', 'Local environment')
     .build();
