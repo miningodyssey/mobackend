@@ -16,9 +16,15 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
-      - name: Build and push Docker image
+      - name: Build Docker image
         run: |
-          docker buildx build --push --tag yourusername/mobackend:latest .
+          docker buildx build -t mobackend:latest .
+
+      - name: Save Docker image as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: mobackend-image
+          path: mobackend.tar
 
       - name: Set up kubectl
         uses: azure/setup-kubectl@v1
