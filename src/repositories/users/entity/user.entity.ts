@@ -25,4 +25,7 @@ export class User {
 
   @Column({ type: 'decimal', default: 0 })
   personalRecord: number;
+
+  @Column({ type: 'simple-array', default: [] })
+  completedTaskIds: number[];
 }

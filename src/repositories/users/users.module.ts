@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { RedisModule } from '@nestjs-modules/ioredis';
-import { UsersService } from './gameData.service';
+import { UsersService } from './users.service';
 import { User } from './entity/user.entity';
-import { UsersController } from './gameData.controller';
+import { UsersController } from './users.controller';
 
 @Module({
   imports: [
@@ -19,4 +19,4 @@ import { UsersController } from './gameData.controller';
   providers: [UsersService],
   exports: [UsersService],
 })
-export class GameDataModule {}
+export class UsersModule {}

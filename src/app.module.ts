@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { RedisModule } from '@nestjs-modules/ioredis';
-import { UsersService } from './repositories/stats/gameData.service';
-import { UsersController } from './repositories/stats/gameData.controller';
-import { User } from './repositories/stats/entity/user.entity';
+import { UsersService } from './repositories/users/users.service';
+import { UsersController } from './repositories/users/users.controller';
+import { User } from './repositories/users/entity/user.entity';
 import * as process from 'process';
-import { AppController } from "./app.controller";
-import { AppService } from "./app.service";
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
 
 @Module({
   imports: [

@@ -1,10 +1,9 @@
 import { Controller, Get, Param, Post, Body, Put } from '@nestjs/common';
-import { UsersService } from './gameData.service';
-import { User } from './entity/user.entity';
+import { TasksService } from './tasks.service';
 
 @Controller('stats')
-export class UsersController {
-  constructor(private readonly gameDataService: UsersService) {}
+export class TasksController {
+  constructor(private readonly taskService: TasksService) {}
 
   // Получение данных пользователя по его ID
   @Get(':id')
