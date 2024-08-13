@@ -32,6 +32,12 @@ jobs:
         run: |
           docker buildx build --tag $IMAGE_NAME:$IMAGE_TAG --push .
 
+      - name: Set up Yandex Cloud CLI
+        run: |
+          curl https://storage.yandexcloud.net/yandexcloud-yc/install.sh | bash
+          export PATH=$PATH:$HOME/.local/bin
+          yc config set token ${{ secrets.YC_TOKEN }}
+
       - name: Set up kubectl
         uses: azure/setup-kubectl@v1
         with:
