@@ -24,7 +24,7 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker buildx build -t $IMAGE_NAME:$IMAGE_TAG .
+          docker buildx build --tag $IMAGE_NAME:$IMAGE_TAG --push .
 
       - name: Log in to DockerHub
         uses: docker/login-action@v2
