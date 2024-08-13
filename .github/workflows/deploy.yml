@@ -21,6 +21,10 @@ jobs:
           docker buildx build -t yourusername/mobackend:latest .
 
       - name: Save Docker image as artifact
+        run: |
+          docker save yourusername/mobackend:latest -o mobackend.tar
+
+      - name: Upload Docker image artifact
         uses: actions/upload-artifact@v3
         with:
           name: mobackend-image
