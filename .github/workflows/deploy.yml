@@ -6,7 +6,7 @@ on:
       - main
 
 env:
-  IMAGE_NAME: yourusername/mobackend
+  IMAGE_NAME: andreyzuikov/mobackend
   IMAGE_TAG: latest
   DEPLOYMENT_NAME: my-deployment
   CONTAINER_NAME: my-container
