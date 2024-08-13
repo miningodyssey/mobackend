@@ -5,6 +5,12 @@ on:
     branches:
       - main
 
+env:
+  IMAGE_NAME: yourusername/mobackend
+  IMAGE_TAG: latest
+  DEPLOYMENT_NAME: my-deployment
+  CONTAINER_NAME: my-container
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -18,7 +24,11 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker buildx build -t yourusername/mobackend:latest .
+          docker buildx build -t $IMAGE_NAME:$IMAGE_TAG .
+
+      - name: Push Docker image
+        run: |
+          docker push $IMAGE_NAME:$IMAGE_TAG
 
       - name: Set up kubectl
         uses: azure/setup-kubectl@v1
@@ -32,6 +42,14 @@ jobs:
       - name: Set up Kubeconfig
         run: |
           echo "${{ secrets.KUBECONFIG }}" | base64 --decode > $HOME/.kube/config
+
+      - name: Validate Kubernetes manifests
+        run: |
+          kubectl apply --dry-run=client -f k8s/
+
+      - name: Deploy to Kubernetes
+        run: |
+          kubectl set image deployment/$DEPLOYMENT_NAME $CONTAINER_NAME=$IMAGE_NAME:$IMAGE_TAG
 
   test:
     runs-on: ubuntu-latest
