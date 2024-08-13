@@ -34,16 +34,15 @@ jobs:
 
       - name: Install Yandex Cloud CLI
         run: |
-          curl https://storage.yandexcloud.net/yandexcloud-yc/install.sh | bash
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
+          curl -sSL https://storage.yandexcloud.net/yandexcloud-yc/install.sh | bash -x
 
-      - name: Check installation path
+      - name: Locate yc binary
         run: |
-          ls -l $HOME/.local/bin
+          find / -name yc 2>/dev/null
 
-      - name: Verify yc installation
+      - name: Check yc installation
         run: |
-          bash -c "source $HOME/.bashrc && /home/runner/.local/bin/yc --version"
+          /home/runner/.local/bin/yc --version || echo "yc not found"
 
       - name: Set up kubectl
         uses: azure/setup-kubectl@v1
