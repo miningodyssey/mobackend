@@ -38,7 +38,7 @@ jobs:
       - name: Install SSH Client
         run: sudo apt-get install -y openssh-client
 
-      - name: Connect to Remote VM and Install kubectl
+      - name: Connect to Remote VM and Install Minikube and kubectl
         uses: appleboy/ssh-action@v0.1.4
         with:
           host: ${{ secrets.SERVER_HOST }}
@@ -50,6 +50,12 @@ jobs:
               sudo snap install kubectl --classic
             fi
 
+            # Install Minikube if not already installed
+            if ! command -v minikube &> /dev/null; then
+              curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+              sudo install minikube-linux-amd64 /usr/local/bin/minikube
+            fi
+
             # Start Minikube if not running
             if ! minikube status &>/dev/null; then
               minikube start
@@ -58,8 +64,8 @@ jobs:
             # Set up Docker environment to use Minikube's Docker daemon
             eval $(minikube -p minikube docker-env)
             
-            # Ensure kubectl is configured correctly
-            kubectl config view
+            # Update kubeconfig for Minikube
+            minikube update-context
 
       - name: Copy Kubernetes Manifests to Remote VM
         uses: appleboy/ssh-action@v0.1.4
