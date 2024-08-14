@@ -41,7 +41,7 @@ jobs:
       - name: Setup protected regular
         run: sudo sysctl fs.protected_regular=0
 
-      - name: Connect to Remote VM and Install Minikube and kubectl
+      - name: Connect to Remote VM and Install Minikube, kubectl, and cri-dockerd
         uses: appleboy/ssh-action@v0.1.4
         with:
           host: ${{ secrets.SERVER_HOST }}
@@ -67,6 +67,22 @@ jobs:
               sudo install minikube-linux-amd64 /usr/local/bin/minikube
             fi
 
+            # Install cri-dockerd if not already installed
+            if ! command -v cri-dockerd &> /dev/null; then
+              sudo apt-get update
+              sudo apt-get install -y git golang-go
+              git clone https://github.com/Mirantis/cri-dockerd.git
+              cd cri-dockerd
+              mkdir bin
+              go build -o bin/cri-dockerd
+              sudo install -o root -g root -m 0755 bin/cri-dockerd /usr/local/bin/cri-dockerd
+              sudo cp -a packaging/systemd/* /etc/systemd/system/
+              sudo sed -i s:/usr/bin:/usr/local/bin/: /etc/systemd/system/cri-docker.service
+              sudo systemctl daemon-reload
+              sudo systemctl enable cri-docker.service
+              sudo systemctl enable --now cri-docker.socket
+            fi
+
             # Start Minikube with the Docker driver
             if ! minikube status &>/dev/null; then
               minikube start --driver=none --force
@@ -80,4 +96,3 @@ jobs:
 
             # Update kubeconfig for Minikube
             minikube update-context
-      
