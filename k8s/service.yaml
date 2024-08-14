@@ -9,4 +9,5 @@ spec:
     - protocol: TCP
       port: 3000
       targetPort: 3000
-  type: LoadBalancer  # Для доступа снаружи кластера
+      nodePort: 30000  # Порт на ноде
+  type: NodePort
