@@ -35,6 +35,9 @@ jobs:
     needs: build
 
     steps:
+      - name: Remove Temp Files
+        run: sudo rm /tmp/juju-* -rf
+
       - name: Install SSH Client
         run: sudo apt-get install -y openssh-client
 
