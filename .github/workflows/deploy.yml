@@ -67,22 +67,6 @@ jobs:
               sudo install minikube-linux-amd64 /usr/local/bin/minikube
             fi
 
-            # Install cri-dockerd if not already installed
-            if ! command -v cri-dockerd &> /dev/null; then
-              sudo apt-get update
-              sudo apt-get install -y git golang-go
-              git clone https://github.com/Mirantis/cri-dockerd.git
-              cd cri-dockerd
-              mkdir bin
-              go build -o bin/cri-dockerd
-              sudo install -o root -g root -m 0755 bin/cri-dockerd /usr/local/bin/cri-dockerd
-              sudo cp -a packaging/systemd/* /etc/systemd/system/
-              sudo sed -i s:/usr/bin:/usr/local/bin/: /etc/systemd/system/cri-docker.service
-              sudo systemctl daemon-reload
-              sudo systemctl enable cri-docker.service
-              sudo systemctl enable --now cri-docker.socket
-            fi
-
             # Start Minikube with the Docker driver
             if ! minikube status &>/dev/null; then
               minikube start --driver=docker --force
