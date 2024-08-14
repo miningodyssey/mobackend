@@ -61,7 +61,7 @@ jobs:
 
             # Start Minikube if not running
             if ! minikube status &>/dev/null; then
-              sudo minikube start --force
+              sudo minikube start --driver=none
             fi
 
             # Set up Docker environment to use Minikube's Docker daemon
