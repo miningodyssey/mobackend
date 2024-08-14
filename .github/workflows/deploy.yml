@@ -3,10 +3,10 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
-      - main  # Запускать workflow при пуше в ветку main
+      - main
   pull_request:
     branches:
-      - main  # Запускать тесты при открытии PR в main
+      - main
 
 jobs:
   build:
@@ -33,20 +33,34 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs: build
+
     steps:
-      - name: Deploy to server via SSH
+      - name: Install SSH Client
+        run: sudo apt-get install -y openssh-client
+
+      - name: Connect to Remote VM and Set Up Minikube
         uses: appleboy/ssh-action@v0.1.4
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
-            cd mobackend
-            sudo docker pull andreyzuikov/mobackend:latest
-            # Start rolling update by first scaling up the service
-            sudo docker compose up -d --no-deps --scale app=2
-            # Gracefully remove the old container
-            sudo docker compose stop app --timeout 30
-            sudo docker compose rm -f app
-            # Scale back to original size
-            sudo docker compose up -d --no-deps --scale app=1
+            # Start Minikube if not running
+            if ! minikube status &>/dev/null; then
+              minikube start
+            fi
+            # Set up Docker environment to use Minikube's Docker daemon
+            eval $(minikube -p minikube docker-env)
+
+      - name: Deploy to Minikube
+        uses: appleboy/ssh-action@v0.1.4
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            kubectl apply -f /path/to/k8s/secret.yaml
+            kubectl apply -f /path/to/k8s/postgres-deployment.yaml
+            kubectl apply -f /path/to/k8s/postgres-service.yaml
+            kubectl apply -f /path/to/k8s/deployment.yaml
+            kubectl apply -f /path/to/k8s/service.yaml

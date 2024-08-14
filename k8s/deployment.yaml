@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mobackend-deployment
+  labels:
+    app: mobackend
+spec:
+  replicas: 2  # Указываем количество реплик для rolling update
+  selector:
+    matchLabels:
+      app: mobackend
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1  # Максимум 1 недоступная реплика во время обновления
+      maxSurge: 1  # Максимум 1 новая реплика во время обновления
+  template:
+    metadata:
+      labels:
+        app: mobackend
+    spec:
+      containers:
+        - name: mobackend
+          image: andreyzuikov/mobackend:latest
+          ports:
+            - containerPort: 3000
+          env:
+            - name: DATABASE_HOST
+              value: "postgres-service"  # Используем имя сервиса для PostgreSQL
+            - name: DATABASE_PORT
+              value: "5432"
+            - name: DATABASE_USER
+              valueFrom:
+                secretKeyRef:
+                  name: db-secrets
+                  key: database_user
+            - name: DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-secrets
+                  key: database_password
+            - name: DATABASE_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: db-secrets
+                  key: database_name
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: jwt-secrets
+                  key: jwt_secret
+      volumes:
+        - name: cache
+          emptyDir: {}
+        - name: chdata
+          emptyDir: {}
+        - name: rdsdata
+          emptyDir: {}
