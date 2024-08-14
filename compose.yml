@@ -1,9 +1,7 @@
 version: '3.9'
 services:
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: andreyzuikov/mobackend:latest
     container_name: mobackend
     ports:
       - '3000:3000'
