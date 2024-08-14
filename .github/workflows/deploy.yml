@@ -89,7 +89,7 @@ jobs:
 
             # Start Minikube without root
             if ! minikube status &>/dev/null; then
-              minikube start --driver=none
+              minikube start --force
             fi
 
             # Wait for Minikube to be fully started
