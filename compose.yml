@@ -1,7 +1,9 @@
 version: '3.9'
 services:
   app:
-    image: andreyzuikov/mobackend:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: mobackend
     ports:
       - '3000:3000'
@@ -10,11 +12,11 @@ services:
       - apinet
       - gateway
     environment:
-      - DATABASE_HOST=${DATABASE_HOST}
-      - DATABASE_PORT=${DATABASE_PORT}
-      - DATABASE_USER=${DATABASE_USER}
-      - DATABASE_PASSWORD=${DATABASE_PASSWORD}
-      - DATABASE_NAME=${DATABASE_NAME}
+      - DATABASE_HOST=postgres
+      - DATABASE_PORT=5432
+      - DATABASE_USER=your_username
+      - DATABASE_PASSWORD=your_password
+      - DATABASE_NAME=your_database
       - JWT_SECRET=${JWT_SECRET}
     env_file:
       - .env
