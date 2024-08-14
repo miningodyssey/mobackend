@@ -50,43 +50,47 @@ jobs:
               sudo snap install kubectl --classic
             fi
 
-            # Install conntrack
+            # Install conntrack if not already installed
             if ! command -v conntrack &> /dev/null; then
               sudo apt-get update
               sudo apt-get install -y conntrack
             fi
 
-            # Install crictl
-            VERSION=$(curl -sL https://api.github.com/repos/kubernetes-sigs/cri-tools/releases/latest | jq -r .tag_name)
-            curl -LO https://github.com/kubernetes-sigs/cri-tools/releases/download/${VERSION}/crictl-${VERSION}-linux-amd64.tar.gz
-            tar -zxvf crictl-${VERSION}-linux-amd64.tar.gz
-            sudo mv crictl /usr/local/bin/
+            # Install crictl if not already installed
+            if ! command -v crictl &> /dev/null; then
+              VERSION=$(curl -sL https://api.github.com/repos/kubernetes-sigs/cri-tools/releases/latest | jq -r .tag_name)
+              curl -LO https://github.com/kubernetes-sigs/cri-tools/releases/download/${VERSION}/crictl-${VERSION}-linux-amd64.tar.gz
+              tar -zxvf crictl-${VERSION}-linux-amd64.tar.gz
+              sudo mv crictl /usr/local/bin/
+            fi
 
-            # Install cri-dockerd
-            CRI_VERSION=$(curl -sL https://api.github.com/repos/Mirantis/cri-dockerd/releases/latest | jq -r .tag_name)
-            curl -LO https://github.com/Mirantis/cri-dockerd/releases/download/${CRI_VERSION}/cri-dockerd-${CRI_VERSION}-linux-amd64.tar.gz
-            tar -zxvf cri-dockerd-${CRI_VERSION}-linux-amd64.tar.gz
-            sudo mv cri-dockerd /usr/local/bin/
+            # Install cri-dockerd if not already installed
+            if ! command -v cri-dockerd &> /dev/null; then
+              CRI_VERSION=$(curl -sL https://api.github.com/repos/Mirantis/cri-dockerd/releases/latest | jq -r .tag_name)
+              curl -LO https://github.com/Mirantis/cri-dockerd/releases/download/${CRI_VERSION}/cri-dockerd-${CRI_VERSION}-linux-amd64.tar.gz
+              tar -zxvf cri-dockerd-${CRI_VERSION}-linux-amd64.tar.gz
+              sudo mv cri-dockerd /usr/local/bin/
 
-            # Create systemd service for cri-dockerd
-            sudo tee /etc/systemd/system/cri-docker.service <<EOF
-            [Unit]
-            Description=cri-dockerd
-            After=network.target
+              # Create systemd service for cri-dockerd
+              sudo tee /etc/systemd/system/cri-docker.service <<EOF
+              [Unit]
+              Description=cri-dockerd
+              After=network.target
 
-            [Service]
-            ExecStart=/usr/local/bin/cri-dockerd
-            Restart=always
-            RestartSec=3
+              [Service]
+              ExecStart=/usr/local/bin/cri-dockerd
+              Restart=always
+              RestartSec=3
 
-            [Install]
-            WantedBy=multi-user.target
-            EOF
+              [Install]
+              WantedBy=multi-user.target
+              EOF
 
-            # Start and enable cri-dockerd
-            sudo systemctl daemon-reload
-            sudo systemctl start cri-docker
-            sudo systemctl enable cri-docker
+              # Start and enable cri-dockerd
+              sudo systemctl daemon-reload
+              sudo systemctl start cri-docker
+              sudo systemctl enable cri-docker
+            fi
 
             # Install Minikube if not already installed
             if ! command -v minikube &> /dev/null; then
