@@ -44,9 +44,9 @@ jobs:
             cd mobackend
             sudo docker pull andreyzuikov/mobackend:latest
             # Start rolling update by first scaling up the service
-            sudo docker-compose up -d --no-deps --scale app=2
+            sudo docker compose up -d --no-deps --scale app=2
             # Gracefully remove the old container
-            sudo docker-compose stop app --timeout 30
-            sudo docker-compose rm -f app
+            sudo docker compose stop app --timeout 30
+            sudo docker compose rm -f app
             # Scale back to original size
-            sudo docker-compose up -d --no-deps --scale app=1
+            sudo docker compose up -d --no-deps --scale app=1
