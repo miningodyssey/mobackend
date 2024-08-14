@@ -38,6 +38,9 @@ jobs:
       - name: Install SSH Client
         run: sudo apt-get install -y openssh-client
 
+      - name: Setup protected regular
+        run: sudo sysctl fs.protected_regular=0
+
       - name: Connect to Remote VM and Install Minikube and kubectl
         uses: appleboy/ssh-action@v0.1.4
         with:
