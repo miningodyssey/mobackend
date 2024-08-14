@@ -49,13 +49,13 @@ jobs:
             if ! command -v kubectl &> /dev/null; then
               sudo snap install kubectl --classic
             fi
-            
+
             # Install conntrack if not already installed
             if ! command -v conntrack &> /dev/null; then
               sudo apt-get update
               sudo apt-get install -y conntrack
             fi
-            
+
             # Install crictl if not already installed
             if ! command -v crictl &> /dev/null; then
               VERSION=$(curl -sL https://api.github.com/repos/kubernetes-sigs/cri-tools/releases/latest | jq -r .tag_name)
@@ -63,51 +63,51 @@ jobs:
               tar -zxvf crictl-${VERSION}-linux-amd64.tar.gz
               sudo mv crictl /usr/local/bin/
             fi
-            
+
             # Install cri-dockerd if not already installed
             if ! command -v cri-dockerd &> /dev/null; then
               CRI_VERSION=$(curl -sL https://api.github.com/repos/Mirantis/cri-dockerd/releases/latest | jq -r .tag_name)
               curl -LO https://github.com/Mirantis/cri-dockerd/releases/download/${CRI_VERSION}/cri-dockerd-${CRI_VERSION}-linux-amd64.tar.gz
               tar -zxvf cri-dockerd-${CRI_VERSION}-linux-amd64.tar.gz
               sudo mv cri-dockerd /usr/local/bin/
-            
+
               # Create systemd service for cri-dockerd
               sudo tee /etc/systemd/system/cri-docker.service > /dev/null <<EOF
-      [Unit]
-      Description=cri-dockerd
-      After=network.target
+            [ Unit ]
+            Description=cri-dockerd
+            After=network.target
       
-      [Service]
-      ExecStart=/usr/local/bin/cri-dockerd
-      Restart=always
-      RestartSec=3
+            [ Service ]
+            ExecStart=/usr/local/bin/cri-dockerd
+            Restart=always
+            RestartSec=3
       
-      [Install]
-      WantedBy=multi-user.target
-      EOF
-      
-      # Start and enable cri-dockerd
-      sudo systemctl daemon-reload
-      sudo systemctl start cri-docker
-      sudo systemctl enable cri-docker
-      fi
-      
-      # Install Minikube if not already installed
-      if ! command -v minikube &> /dev/null; then
-      curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
-      sudo install minikube-linux-amd64 /usr/local/bin/minikube
-      fi
-      
-      # Start Minikube without root
-      if ! minikube status &>/dev/null; then
-      minikube start --driver=none
-      fi
-      
-      # Wait for Minikube to be fully started
-      sleep 120
-      
-      # Set up Docker environment to use Minikube's Docker daemon
-      eval $(minikube -p minikube docker-env)
-      
-      # Update kubeconfig for Minikube
-      minikube update-context
+            [ Install ]
+            WantedBy=multi-user.target
+            EOF
+            
+            # Start and enable cri-dockerd
+            sudo systemctl daemon-reload
+            sudo systemctl start cri-docker
+            sudo systemctl enable cri-docker
+            fi
+            
+            # Install Minikube if not already installed
+            if ! command -v minikube &> /dev/null; then
+            curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+            sudo install minikube-linux-amd64 /usr/local/bin/minikube
+            fi
+            
+            # Start Minikube without root
+            if ! minikube status &>/dev/null; then
+            minikube start --driver=none
+            fi
+            
+            # Wait for Minikube to be fully started
+            sleep 120
+            
+            # Set up Docker environment to use Minikube's Docker daemon
+            eval $(minikube -p minikube docker-env)
+            
+            # Update kubeconfig for Minikube
+            minikube update-context
