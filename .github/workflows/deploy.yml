@@ -50,6 +50,12 @@ jobs:
               sudo snap install kubectl --classic
             fi
 
+            # Install conntrack
+            if ! command -v conntrack &> /dev/null; then
+              sudo apt-get update
+              sudo apt-get install -y conntrack
+            fi
+
             # Install Minikube if not already installed
             if ! command -v minikube &> /dev/null; then
               curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
@@ -66,31 +72,6 @@ jobs:
 
             # Set up Docker environment to use Minikube's Docker daemon
             eval $(minikube -p minikube docker-env)
-            
+
             # Update kubeconfig for Minikube
             minikube update-context
-
-      - name: Copy Kubernetes Manifests to Remote VM
-        uses: appleboy/ssh-action@v0.1.4
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
-          script: |
-            mkdir -p /home/${{ secrets.SERVER_USER }}/mobackend/k8s
-          upload: |
-            scp -i ${{ secrets.SERVER_SSH_KEY }} -r ./k8s ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/home/${{ secrets.SERVER_USER }}/mobackend/
-
-      - name: Deploy to Minikube
-        uses: appleboy/ssh-action@v0.1.4
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
-          script: |
-            # Apply Kubernetes manifests
-            sudo kubectl apply -f /home/${{ secrets.SERVER_USER }}/mobackend/k8s/secret.yaml --validate=false
-            sudo kubectl apply -f /home/${{ secrets.SERVER_USER }}/mobackend/k8s/postgres-deployment.yaml --validate=false
-            sudo kubectl apply -f /home/${{ secrets.SERVER_USER }}/mobackend/k8s/postgres-service.yaml --validate=false
-            sudo kubectl apply -f /home/${{ secrets.SERVER_USER }}/mobackend/k8s/deployment.yaml --validate=false
-            sudo kubectl apply -f /home/${{ secrets.SERVER_USER }}/mobackend/k8s/service.yaml --validate=false
