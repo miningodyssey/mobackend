@@ -58,14 +58,14 @@ jobs:
 
             # Start Minikube if not running
             if ! minikube status &>/dev/null; then
-              minikube start
+              sudo minikube start
             fi
 
             # Set up Docker environment to use Minikube's Docker daemon
             eval $(minikube -p minikube docker-env)
             
             # Update kubeconfig for Minikube
-            minikube update-context
+            sudo minikube update-context
 
       - name: Copy Kubernetes Manifests to Remote VM
         uses: appleboy/ssh-action@v0.1.4
@@ -85,8 +85,8 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
-            kubectl apply -f /home/${{ secrets.SERVER_USER }}/mobackend/k8s/secret.yaml --validate=false
-            kubectl apply -f /home/${{ secrets.SERVER_USER }}/mobackend/k8s/postgres-deployment.yaml --validate=false
-            kubectl apply -f /home/${{ secrets.SERVER_USER }}/mobackend/k8s/postgres-service.yaml --validate=false
-            kubectl apply -f /home/${{ secrets.SERVER_USER }}/mobackend/k8s/deployment.yaml --validate=false
-            kubectl apply -f /home/${{ secrets.SERVER_USER }}/mobackend/k8s/service.yaml --validate=false
+            sudo kubectl apply -f /home/${{ secrets.SERVER_USER }}/mobackend/k8s/secret.yaml --validate=false
+            sudo kubectl apply -f /home/${{ secrets.SERVER_USER }}/mobackend/k8s/postgres-deployment.yaml --validate=false
+            sudo kubectl apply -f /home/${{ secrets.SERVER_USER }}/mobackend/k8s/postgres-service.yaml --validate=false
+            sudo kubectl apply -f /home/${{ secrets.SERVER_USER }}/mobackend/k8s/deployment.yaml --validate=false
+            sudo kubectl apply -f /home/${{ secrets.SERVER_USER }}/mobackend/k8s/service.yaml --validate=false
