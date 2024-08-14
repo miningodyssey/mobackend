@@ -24,17 +24,17 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: db-secrets
-                  key: DATABASE_NAME
+                  key: database_name
             - name: POSTGRES_USER
               valueFrom:
                 secretKeyRef:
                   name: db-secrets
-                  key: DATABASE_USER
+                  key: database_user
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: db-secrets
-                  key: DATABASE_PASSWORD
+                  key: database_password
           volumeMounts:
             - name: pgdata
               mountPath: /var/lib/postgresql/data

@@ -33,22 +33,22 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: db-secrets
-                  key: DATABASE_USER
+                  key: database_user
             - name: DATABASE_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: db-secrets
-                  key: DATABASE_PASSWORD
+                  key: database_password
             - name: DATABASE_NAME
               valueFrom:
                 secretKeyRef:
                   name: db-secrets
-                  key: DATABASE_NAMES
+                  key: database_name
             - name: JWT_SECRET
               valueFrom:
                 secretKeyRef:
                   name: jwt-secrets
-                  key: JWT_SECRET
+                  key: jwt_secret
       volumes:
         - name: cache
           emptyDir: {}
