@@ -49,13 +49,13 @@ jobs:
             if ! command -v kubectl &> /dev/null; then
               sudo snap install kubectl --classic
             fi
-
+            
             # Install conntrack if not already installed
             if ! command -v conntrack &> /dev/null; then
               sudo apt-get update
               sudo apt-get install -y conntrack
             fi
-
+            
             # Install crictl if not already installed
             if ! command -v crictl &> /dev/null; then
               VERSION=$(curl -sL https://api.github.com/repos/kubernetes-sigs/cri-tools/releases/latest | jq -r .tag_name)
@@ -63,7 +63,7 @@ jobs:
               tar -zxvf crictl-${VERSION}-linux-amd64.tar.gz
               sudo mv crictl /usr/local/bin/
             fi
-
+            
             # Install cri-dockerd if not already installed
             if ! command -v cri-dockerd &> /dev/null; then
               git clone https://github.com/Mirantis/cri-dockerd.git
@@ -74,29 +74,29 @@ jobs:
               cd packaging/systemd
               sudo cp cri-docker.service /etc/systemd/system/
               sudo cp cri-docker.socket /etc/systemd/system/
-
+            
               # Enable and start cri-dockerd service
               sudo systemctl daemon-reload
               sudo systemctl enable cri-docker.service
               sudo systemctl enable --now cri-docker.socket
             fi
-
+            
             # Install Minikube if not already installed
             if ! command -v minikube &> /dev/null; then
               curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
               sudo install minikube-linux-amd64 /usr/local/bin/minikube
             fi
-
+            
             # Start Minikube without root
             if ! minikube status &>/dev/null; then
-              minikube start --force
+              minikube start --driver=none
             fi
-
+            
             # Wait for Minikube to be fully started
             sleep 120
-
+            
             # Set up Docker environment to use Minikube's Docker daemon
             eval $(minikube -p minikube docker-env)
-
+            
             # Update kubeconfig for Minikube
             minikube update-context
