@@ -98,9 +98,9 @@ jobs:
             minikube update-context
 
             # Apply Kubernetes manifests
-            kubectl apply -f ./k8s/deployment.yaml
-            kubectl apply -f ./k8s/postgres-deployment.yaml
-            kubectl apply -f ./k8s/postgres-service.yaml
-            kubectl apply -f ./k8s/pvc.yaml
-            kubectl apply -f ./k8s/secret.yaml
-            kubectl apply -f ./k8s/service.yaml
+            kubectl apply -f /home/andrey/mobackend/k8s/deployment.yaml
+            kubectl apply -f /home/andrey/mobackend/k8s/postgres-deployment.yaml
+            kubectl apply -f /home/andrey/mobackend/k8s/postgres-service.yaml
+            kubectl apply -f /home/andrey/mobackend/k8s/pvc.yaml
+            kubectl apply -f /home/andrey/mobackend/k8s/secret.yaml
+            kubectl apply -f /home/andrey/mobackend/k8s/service.yaml
