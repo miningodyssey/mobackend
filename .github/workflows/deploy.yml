@@ -66,48 +66,37 @@ jobs:
 
             # Install cri-dockerd if not already installed
             if ! command -v cri-dockerd &> /dev/null; then
-              CRI_VERSION=$(curl -sL https://api.github.com/repos/Mirantis/cri-dockerd/releases/latest | jq -r .tag_name)
-              curl -LO https://github.com/Mirantis/cri-dockerd/releases/download/${CRI_VERSION}/cri-dockerd-${CRI_VERSION}-linux-amd64.tar.gz
-              tar -zxvf cri-dockerd-${CRI_VERSION}-linux-amd64.tar.gz
-              sudo mv cri-dockerd /usr/local/bin/
+              git clone https://github.com/Mirantis/cri-dockerd.git
+              cd cri-dockerd
+              mkdir bin
+              go build -o bin/cri-dockerd
+              sudo install -o root -g root -m 0755 bin/cri-dockerd /usr/local/bin/cri-dockerd
+              cd packaging/systemd
+              sudo cp cri-docker.service /etc/systemd/system/
+              sudo cp cri-docker.socket /etc/systemd/system/
 
-              # Create systemd service for cri-dockerd
-              sudo tee /etc/systemd/system/cri-docker.service > /dev/null <<EOF
-            [ Unit ]
-            Description=cri-dockerd
-            After=network.target
-      
-            [ Service ]
-            ExecStart=/usr/local/bin/cri-dockerd
-            Restart=always
-            RestartSec=3
-      
-            [ Install ]
-            WantedBy=multi-user.target
-            EOF
-            
-            # Start and enable cri-dockerd
-            sudo systemctl daemon-reload
-            sudo systemctl start cri-docker
-            sudo systemctl enable cri-docker
+              # Enable and start cri-dockerd service
+              sudo systemctl daemon-reload
+              sudo systemctl enable cri-docker.service
+              sudo systemctl enable --now cri-docker.socket
             fi
-            
+
             # Install Minikube if not already installed
             if ! command -v minikube &> /dev/null; then
-            curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
-            sudo install minikube-linux-amd64 /usr/local/bin/minikube
+              curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+              sudo install minikube-linux-amd64 /usr/local/bin/minikube
             fi
-            
+
             # Start Minikube without root
             if ! minikube status &>/dev/null; then
-            minikube start --driver=none
+              minikube start --driver=none
             fi
-            
+
             # Wait for Minikube to be fully started
             sleep 120
-            
+
             # Set up Docker environment to use Minikube's Docker daemon
             eval $(minikube -p minikube docker-env)
-            
+
             # Update kubeconfig for Minikube
             minikube update-context
