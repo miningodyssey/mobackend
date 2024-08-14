@@ -5,15 +5,15 @@ metadata:
   labels:
     app: mobackend
 spec:
-  replicas: 2  # Указываем количество реплик для rolling update
+  replicas: 2
   selector:
     matchLabels:
       app: mobackend
   strategy:
     type: RollingUpdate
     rollingUpdate:
-      maxUnavailable: 1  # Максимум 1 недоступная реплика во время обновления
-      maxSurge: 1  # Максимум 1 новая реплика во время обновления
+      maxUnavailable: 1
+      maxSurge: 1
   template:
     metadata:
       labels:
@@ -26,7 +26,7 @@ spec:
             - containerPort: 3000
           env:
             - name: DATABASE_HOST
-              value: "postgres-service"  # Используем имя сервиса для PostgreSQL
+              value: "postgres-service"
             - name: DATABASE_PORT
               value: "5432"
             - name: DATABASE_USER

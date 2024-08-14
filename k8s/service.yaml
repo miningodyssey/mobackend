@@ -9,5 +9,5 @@ spec:
     - protocol: TCP
       port: 3000
       targetPort: 3000
-      nodePort: 30000  # Порт на ноде
+      nodePort: 30000
   type: NodePort
