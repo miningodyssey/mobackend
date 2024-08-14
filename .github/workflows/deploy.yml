@@ -41,6 +41,6 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
-            docker pull andreyzuikov/mobackend:latest
-            docker-compose down
-            docker-compose up -d
+            sudo docker pull andreyzuikov/mobackend:latest
+            sudo docker compose down
+            sudo docker compose up -d
