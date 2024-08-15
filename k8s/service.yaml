@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: mobackend-service
 spec:
-  type: LoadBalancer
+  type: NodePort
   selector:
     app: mobackend
   ports:
