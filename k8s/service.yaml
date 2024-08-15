@@ -10,4 +10,4 @@ spec:
     - protocol: TCP
       port: 3000
       targetPort: 3000
-  clusterIP: 127.0.0.1
+      nodePort: 3000
