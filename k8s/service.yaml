@@ -3,10 +3,11 @@ kind: Service
 metadata:
   name: mobackend-service
 spec:
-  type: LoadBalancer
+  type: NodePort
   selector:
     app: mobackend
   ports:
     - protocol: TCP
       port: 3000
       targetPort: 3000
+      nodePort: 30000
