@@ -3,11 +3,11 @@ kind: Service
 metadata:
   name: mobackend-service
 spec:
-  type: NodePort
   selector:
     app: mobackend
   ports:
-    - port: 3000
+    - protocol: TCP
+      port: 3000
       targetPort: 3000
-      protocol: TCP
-      nodePort: 30000  # Это значение можно изменить на любое доступное в диапазоне 30000-32767
+      nodePort: 30000
+  type: NodePort
