@@ -73,7 +73,7 @@ jobs:
 
             # Start Minikube with the Docker driver
             if ! minikube status &>/dev/null; then
-              minikube start --driver=docker --force
+              minikube start --driver=docker --ports 3000:3000 --force
             fi
 
             # Wait for Minikube to be fully started

@@ -6,7 +6,7 @@ metadata:
     nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
   rules:
-    - host: localhost  # Замените на ваш домен или публичный IP
+    - host: localhost
       http:
         paths:
           - path: /
