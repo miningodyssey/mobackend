@@ -10,7 +10,7 @@ async function bootstrap() {
   });
   const options = new DocumentBuilder()
     .setTitle('MiningOdyssey API')
-    .setVersion('1.0')
+    .setVersion('10.0')
     .addServer('/', 'Local environment')
     .build();
 
