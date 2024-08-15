@@ -73,7 +73,7 @@ jobs:
 
             # Start Minikube with the Docker driver
             if ! minikube status &>/dev/null; then
-              minikube start --driver=docker --network host --force
+              sudo minikube start --driver=docker --network host --force
             fi
 
             # Wait for Minikube to be fully started
