@@ -48,6 +48,10 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
+            # Pull update from github
+            cd mobackend
+            git pull
+            
             # Install kubectl if not already installed
             if ! command -v kubectl &> /dev/null; then
               sudo snap install kubectl --classic
