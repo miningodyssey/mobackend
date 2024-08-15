@@ -81,9 +81,6 @@ jobs:
             # Update kubeconfig for Minikube
             minikube update-context
 
-            # Install Nginx Ingress Controller
-            kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/cloud/deploy.yaml
-
             # Apply Kubernetes secrets
             kubectl create secret generic db-secrets \
               --from-literal=database_user=${{ secrets.DATABASE_USER }} \
