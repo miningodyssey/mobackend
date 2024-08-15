@@ -19,24 +19,15 @@ spec:
       labels:
         app: mobackend
     spec:
-      affinity:
-        podAntiAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            - labelSelector:
-                matchExpressions:
-                  - key: app
-                    operator: In
-                    values:
-                      - mobackend
-              topologyKey: "kubernetes.io/hostname"  # Гарантирует, что Pod'ы не будут развернуты на одном узле
+      hostNetwork: true
       containers:
         - name: mobackend
           image: andreyzuikov/mobackend:latest
           ports:
-            - containerPort: 3000  # Порт контейнера будет проброшен на хост
+            - containerPort: 3000
           env:
             - name: DATABASE_HOST
-              value: "postgres-service"
+              value: "localhost" # измените значение в соответствии с вашим случаем
             - name: DATABASE_PORT
               value: "5432"
             - name: DATABASE_USER
