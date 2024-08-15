@@ -3,12 +3,11 @@ kind: Service
 metadata:
   name: mobackend-service
 spec:
-  externalTrafficPolicy: Cluster
-  type: LoadBalancer
+  type: NodePort
   selector:
     app: mobackend
   ports:
-    - nodePort: 30000
-      port: 3000
+    - port: 3000
+      targetPort: 3000
       protocol: TCP
-      targetPort: 80
+      nodePort: 30000  # Это значение можно изменить на любое доступное в диапазоне 30000-32767
