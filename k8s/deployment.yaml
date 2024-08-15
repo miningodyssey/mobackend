@@ -19,6 +19,7 @@ spec:
       labels:
         app: mobackend
     spec:
+      hostNetwork: true  # Включаем hostNetwork
       affinity:
         podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:

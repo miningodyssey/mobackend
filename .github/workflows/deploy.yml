@@ -102,5 +102,4 @@ jobs:
             kubectl apply -f /home/andrey/mobackend/k8s/postgres-service.yaml
             kubectl apply -f /home/andrey/mobackend/k8s/pvc.yaml
             kubectl apply -f /home/andrey/mobackend/k8s/service.yaml
-            kubectl apply -f /home/andrey/mobackend/k8s/ingress.yaml
           
