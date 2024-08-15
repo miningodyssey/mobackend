@@ -3,9 +3,8 @@ kind: Service
 metadata:
   name: mobackend-service
 spec:
-  clusterIP: 10.99.132.220
   externalTrafficPolicy: Cluster
-  type: NodePort
+  type: LoadBalancer
   selector:
     app: mobackend
   ports:
