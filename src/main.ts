@@ -4,6 +4,12 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import process from 'process';
 
 async function bootstrap() {
+  console.log(
+    process.env.DATABASE_USER,
+    process.env.DATABASE_NAME,
+    process.env.DATABASE_HOST,
+    process.env.DATABASE_USER,
+  );
   const app = await NestFactory.create(AppModule, {
     cors: {
       origin: '*',
@@ -14,12 +20,7 @@ async function bootstrap() {
     .setVersion('1.0')
     .addServer('/', 'Local environment')
     .build();
-  console.log(
-    process.env.DATABASE_USER,
-    process.env.DATABASE_NAME,
-    process.env.DATABASE_HOST,
-    process.env.DATABASE_USER,
-  );
+
   const document = SwaggerModule.createDocument(app, options);
   SwaggerModule.setup('api-docs', app, document);
   await app.listen(3000);
