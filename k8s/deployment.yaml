@@ -19,6 +19,7 @@ spec:
       labels:
         app: mobackend
     spec:
+      hostNetwork: true
       containers:
         - name: mobackend
           image: andreyzuikov/mobackend:latest
