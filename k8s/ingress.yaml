@@ -6,7 +6,7 @@ metadata:
     nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
   rules:
-    - host: https://miningodyssey.pw  # Замените на ваш домен или публичный IP
+    - host: miningodyssey.pw  # Замените на ваш домен или публичный IP
       http:
         paths:
           - path: /
