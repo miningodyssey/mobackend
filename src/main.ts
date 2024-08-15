@@ -1,15 +1,8 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import * as process from 'process';
 
 async function bootstrap() {
-  console.log(
-    process.env.DATABASE_USER,
-    process.env.DATABASE_NAME,
-    process.env.DATABASE_HOST,
-    process.env.DATABASE_USER,
-  );
   const app = await NestFactory.create(AppModule, {
     cors: {
       origin: '*',
