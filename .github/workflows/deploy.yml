@@ -54,7 +54,9 @@ jobs:
         run: cat /home/andrey/mobackend/k8s/deployment.yaml
 
       - name: Update the deployment YAML with the new Docker image tag
-        run: sed -i "s|image: andreyzuikov/mobackend:latest|image: andreyzuikov/mobackend:${{ env.sha }}|" /home/andrey/mobackend/k8s/deployment.yaml
+        run:
+          sed -i "s|image:
+            andreyzuikov/mobackend:latest|image: andreyzuikov/mobackend:${{ env.sha }}|" /home/andrey/mobackend/k8s/deployment.yaml
 
       - name: Show deployment.yaml after update
         run: cat /home/andrey/mobackend/k8s/deployment.yaml
