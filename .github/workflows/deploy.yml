@@ -50,6 +50,15 @@ jobs:
       - name: Setup protected regular
         run: sudo sysctl fs.protected_regular=0
 
+      - name: Show deployment.yaml before update
+        run: cat /home/andrey/mobackend/k8s/deployment.yaml
+
+      - name: Update the deployment YAML with the new Docker image tag
+        run: sed -i "s|image: andreyzuikov/mobackend:latest|image: andreyzuikov/mobackend:${{ env.sha }}|" /home/andrey/mobackend/k8s/deployment.yaml
+
+      - name: Show deployment.yaml after update
+        run: cat /home/andrey/mobackend/k8s/deployment.yaml
+
       - name: Connect to Remote VM and Deploy to Kubernetes
         uses: appleboy/ssh-action@v0.1.4
         with:
