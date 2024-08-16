@@ -13,7 +13,6 @@ async function bootstrap() {
     .setVersion('10.0')
     .addServer('/', 'Local environment')
     .build();
-  console.log('Updated');
   const document = SwaggerModule.createDocument(app, options);
   SwaggerModule.setup('api-docs', app, document);
   await app.listen(3000);

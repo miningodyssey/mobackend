@@ -23,7 +23,6 @@ spec:
       containers:
         - name: mobackend
           image: andreyzuikov/mobackend:latest
-          imagePullPolicy: Always
           ports:
             - containerPort: 3000
           env:
