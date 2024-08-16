@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
         - name: mobackend
-          image: andreyzuikov/mobackend:commit-sha
+          image: andreyzuikov/mobackend:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 3000

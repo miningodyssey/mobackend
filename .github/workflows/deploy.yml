@@ -25,14 +25,14 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Extract version (Git commit SHA)
+      - name: Get short commit SHA
         id: vars
-        run: echo "VERSION=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+        run: echo "sha=$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_ENV
 
-      - name: Build and push Docker image with tag
+      - name: Build and push Docker image
         run: |
-          docker build -t andreyzuikov/mobackend:${{ env.VERSION }} .
-          docker push andreyzuikov/mobackend:${{ env.VERSION }}
+          docker build -t andreyzuikov/mobackend:${{ env.sha }} .
+          docker push andreyzuikov/mobackend:${{ env.sha }}
 
   deploy:
     runs-on: ubuntu-latest
@@ -45,19 +45,19 @@ jobs:
       - name: Setup protected regular
         run: sudo sysctl fs.protected_regular=0
 
-      - name: Connect to Remote VM and Deploy with Updated Image Tag
+      - name: Connect to Remote VM and Deploy to Kubernetes
         uses: appleboy/ssh-action@v0.1.4
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
-            # Pull update from GitHub
+            # Pull latest code from repository
             cd mobackend
             git pull
 
             # Update the deployment YAML with the new Docker image tag
-            sed -i "s|image: andreyzuikov/mobackend:.*|image: andreyzuikov/mobackend:${{ env.VERSION }}|" /home/andrey/mobackend/k8s/deployment.yaml
+            sed -i "s|image: andreyzuikov/mobackend:.*|image: andreyzuikov/mobackend:${{ env.sha }}|" k8s/deployment.yaml
 
             # Apply the updated Kubernetes manifests
             kubectl apply -f /home/andrey/mobackend/k8s/deployment.yaml
