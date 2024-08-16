@@ -58,6 +58,7 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
             cd mobackend
+            git stash
             git pull
 
       - name: Update Deployment YAML
