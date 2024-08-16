@@ -27,7 +27,7 @@ spec:
             - containerPort: 3000
           env:
             - name: DATABASE_HOST
-              value: "localhost" # измените значение в соответствии с вашим случаем
+              value: "postgres-service"
             - name: DATABASE_PORT
               value: "5432"
             - name: DATABASE_USER
