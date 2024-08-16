@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
         - name: mobackend
-          image: andreyzuikov/mobackend:latest
+          image: andreyzuikov/mobackend:{{ new_tag }}
           imagePullPolicy: Always
           ports:
             - containerPort: 3000
