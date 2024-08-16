@@ -50,17 +50,6 @@ jobs:
       - name: Setup protected regular
         run: sudo sysctl fs.protected_regular=0
 
-      - name: Show deployment.yaml before update
-        run: cat /home/andrey/mobackend/k8s/deployment.yaml
-
-      - name: Update the deployment YAML with the new Docker image tag
-        run:
-          sed -i "s|image:
-            andreyzuikov/mobackend:latest|image: andreyzuikov/mobackend:${{ env.sha }}|" /home/andrey/mobackend/k8s/deployment.yaml
-
-      - name: Show deployment.yaml after update
-        run: cat /home/andrey/mobackend/k8s/deployment.yaml
-
       - name: Connect to Remote VM and Deploy to Kubernetes
         uses: appleboy/ssh-action@v0.1.4
         with:
@@ -68,12 +57,20 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
+            
+            
+            
             # Pull latest code from repository
             cd mobackend
             git pull
-  
-            # Update the deployment YAML with the new Docker image tag
+            
+            # Updating deployment.yaml
+            cat /home/andrey/mobackend/k8s/deployment.yaml
+            
             sed -i "s|image: andreyzuikov/mobackend:latest|image: andreyzuikov/mobackend:${{ env.sha }}|" /home/andrey/mobackend/k8s/deployment.yaml
+            
+            # Updated deployment.yaml
+            cat /home/andrey/mobackend/k8s/deployment.yaml
   
             # Install kubectl if not already installed
             if ! command -v kubectl &> /dev/null; then
