@@ -27,7 +27,8 @@ jobs:
 
       - name: Get short commit SHA
         id: vars
-        run: echo "GITHUB_SHA_SHORT=$(echo $GITHUB_SHA | cut -c 1-7)" >> $GITHUB_ENV
+        run: echo "GITHUB_SHA=${GITHUB_SHA}" >> $GITHUB_ENV
+
 
       - name: Build and push Docker image with commit SHA
         run: |
@@ -49,9 +50,6 @@ jobs:
 
       - name: Setup protected regular
         run: sudo sysctl fs.protected_regular=0
-
-      - name: Setup protected regular
-        run: echo ${GITHUB_SHA}
 
       - name: Connect to Remote VM and Pull Latest Code
         uses: appleboy/ssh-action@v0.1.4
