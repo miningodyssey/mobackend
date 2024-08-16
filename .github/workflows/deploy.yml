@@ -50,6 +50,9 @@ jobs:
       - name: Setup protected regular
         run: sudo sysctl fs.protected_regular=0
 
+      - name: Setup protected regular
+        run: echo ${{ env.sha }}
+
       - name: Connect to Remote VM and Pull Latest Code
         uses: appleboy/ssh-action@v0.1.4
         with:
