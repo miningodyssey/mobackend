@@ -31,12 +31,12 @@ jobs:
 
       - name: Build and push Docker image with commit SHA
         run: |
-          docker build -t andreyzuikov/mobackend:${env.GITHUB_SHA_SHORT} .
-          docker push andreyzuikov/mobackend:${env.GITHUB_SHA_SHORT}
+          docker build -t andreyzuikov/mobackend:${GITHUB_SHA} .
+          docker push andreyzuikov/mobackend:${GITHUB_SHA}
 
       - name: Tag latest Docker image with commit SHA as latest
         run: |
-          docker tag andreyzuikov/mobackend:${env.GITHUB_SHA_SHORT} andreyzuikov/mobackend:latest
+          docker tag andreyzuikov/mobackend:${GITHUB_SHA} andreyzuikov/mobackend:latest
           docker push andreyzuikov/mobackend:latest
 
   deploy:
@@ -72,10 +72,10 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
             # Display SHA value
-            echo ${env.GITHUB_SHA_SHORT}
+            echo $GITHUB_SHA
 
             # Update the deployment YAML with the new Docker image tag
-            sed -i "s|image: andreyzuikov/mobackend:latest|image: andreyzuikov/mobackend:${env.GITHUB_SHA_SHORT}|" /home/andrey/mobackend/k8s/deployment.yaml
+            sed -i "s|image: andreyzuikov/mobackend:latest|image: andreyzuikov/mobackend:$GITHUB_SHA|" /home/andrey/mobackend/k8s/deployment.yaml
 
       - name: Install kubectl
         uses: appleboy/ssh-action@v0.1.4
