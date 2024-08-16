@@ -65,13 +65,10 @@ jobs:
             git pull
             
             # Updating deployment.yaml
-            cat /home/andrey/mobackend/k8s/deployment.yaml
+            echo "SHA: ${{ env.sha }}"
             
             sed -i "s|image: andreyzuikov/mobackend:latest|image: andreyzuikov/mobackend:${{ env.sha }}|" /home/andrey/mobackend/k8s/deployment.yaml
             
-            # Updated deployment.yaml
-            cat /home/andrey/mobackend/k8s/deployment.yaml
-  
             # Install kubectl if not already installed
             if ! command -v kubectl &> /dev/null; then
               sudo snap install kubectl --classic
