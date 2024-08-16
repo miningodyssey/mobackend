@@ -57,7 +57,7 @@ jobs:
             git pull
 
             # Update the deployment YAML with the new Docker image tag
-            sed -i "s|image: andreyzuikov/mobackend:.*|image: andreyzuikov/mobackend:${{ env.sha }}|" k8s/deployment.yaml
+            sed -i "s|image: andreyzuikov/mobackend:.*|image: andreyzuikov/mobackend:${{ env.sha }}|" /home/andrey/mobackend/k8s/deployment.yaml
 
             # Apply the updated Kubernetes manifests
             kubectl apply -f /home/andrey/mobackend/k8s/deployment.yaml
