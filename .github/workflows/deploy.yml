@@ -29,10 +29,15 @@ jobs:
         id: vars
         run: echo "sha=$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_ENV
 
-      - name: Build and push Docker image
+      - name: Build and push Docker image with commit SHA
         run: |
           docker build -t andreyzuikov/mobackend:${{ env.sha }} .
           docker push andreyzuikov/mobackend:${{ env.sha }}
+
+      - name: Tag latest Docker image with commit SHA as latest
+        run: |
+          docker tag andreyzuikov/mobackend:${{ env.sha }} andreyzuikov/mobackend:latest
+          docker push andreyzuikov/mobackend:latest
 
   deploy:
     runs-on: ubuntu-latest
@@ -59,7 +64,51 @@ jobs:
             # Update the deployment YAML with the new Docker image tag
             sed -i "s|image: andreyzuikov/mobackend:.*|image: andreyzuikov/mobackend:${{ env.sha }}|" /home/andrey/mobackend/k8s/deployment.yaml
 
-            # Apply the updated Kubernetes manifests
+            # Install kubectl if not already installed
+            if ! command -v kubectl &> /dev/null; then
+              sudo snap install kubectl --classic
+            fi
+
+            # Install Docker if not already installed
+            if ! command -v docker &> /dev/null; then
+              sudo apt-get update
+              sudo apt-get install -y docker.io
+              sudo usermod -aG docker $USER
+              newgrp docker
+            fi
+
+            # Install Minikube if not already installed
+            if ! command -v minikube &> /dev/null; then
+              curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+              sudo install minikube-linux-amd64 /usr/local/bin/minikube
+            fi
+
+            # Start Minikube with the Docker driver
+            if ! minikube status &>/dev/null; then
+              minikube start --driver=docker --force
+            fi
+
+            # Wait for Minikube to be fully started
+            sleep 120
+
+            # Set up Docker environment to use Minikube's Docker daemon
+            eval $(minikube -p minikube docker-env)
+
+            # Update kubeconfig for Minikube
+            minikube update-context
+            
+            # Apply Kubernetes secrets
+            kubectl create secret generic db-secrets \
+              --from-literal=database_user=${{ secrets.DATABASE_USER }} \
+              --from-literal=database_password=${{ secrets.DATABASE_PASSWORD }} \
+              --from-literal=database_name=${{ secrets.DATABASE_NAME }} \
+              --dry-run=client -o yaml | kubectl apply -f -
+
+            kubectl create secret generic jwt-secrets \
+              --from-literal=jwt_secret=${{ secrets.JWT_SECRET }} \
+              --dry-run=client -o yaml | kubectl apply -f -
+
+            # Apply updated Kubernetes manifests
             kubectl apply -f /home/andrey/mobackend/k8s/deployment.yaml
             kubectl apply -f /home/andrey/mobackend/k8s/postgres-deployment.yaml
             kubectl apply -f /home/andrey/mobackend/k8s/postgres-service.yaml
