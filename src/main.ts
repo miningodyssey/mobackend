@@ -10,7 +10,7 @@ async function bootstrap() {
   });
   const options = new DocumentBuilder()
     .setTitle('Mining Odyssey API')
-    .setVersion('2.0')
+    .setVersion('2.5')
     .addServer('/', 'Local environment')
     .build();
   const document = SwaggerModule.createDocument(app, options);
