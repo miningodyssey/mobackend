@@ -71,7 +71,7 @@ jobs:
           args: ${{ env.GITHUB_SHA }}
           script: |
             # Set environment variable
-
+            export GITHUB_SHA=${{ env.GITHUB_SHA }}
             # Display SHA value
             echo "SHA Value: {$GITHUB_SHA}"
             
