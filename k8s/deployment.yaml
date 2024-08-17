@@ -5,15 +5,15 @@ metadata:
   labels:
     app: mobackend
 spec:
-  replicas: 3
+  replicas: 3  # Увеличиваем количество реплик до 3
   selector:
     matchLabels:
       app: mobackend
   strategy:
     type: RollingUpdate
     rollingUpdate:
-      maxUnavailable: 0
-      maxSurge: 1
+      maxUnavailable: 0  # Указываем, что все поды должны быть доступны во время обновления
+      maxSurge: 1  # Можно запустить один дополнительный под во время обновления
   template:
     metadata:
       labels:
@@ -50,6 +50,20 @@ spec:
                 secretKeyRef:
                   name: jwt-secrets
                   key: jwt_secret
+          readinessProbe:  # Добавляем readiness-пробу
+            httpGet:
+              path: /api-docs  # Предполагается, что приложение имеет эндпоинт для проверки здоровья
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            failureThreshold: 3
+          livenessProbe:  # Добавляем liveness-пробу
+            httpGet:
+              path: /api-docs
+              port: 3000
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            failureThreshold: 3
       volumes:
         - name: cache
           emptyDir: {}
