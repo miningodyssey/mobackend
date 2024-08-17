@@ -5,14 +5,14 @@ metadata:
   labels:
     app: mobackend
 spec:
-  replicas: 2
+  replicas: 3
   selector:
     matchLabels:
       app: mobackend
   strategy:
     type: RollingUpdate
     rollingUpdate:
-      maxUnavailable: 1
+      maxUnavailable: 0
       maxSurge: 1
   template:
     metadata:
