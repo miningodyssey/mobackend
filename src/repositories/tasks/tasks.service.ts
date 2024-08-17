@@ -6,6 +6,7 @@ import Redis from 'ioredis';
 import { User } from '../users/entity/user.entity';
 import { Task } from './entity/tasks.entity';
 import { CreateTaskDto } from './dto/CreateTask.dto';
+import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class TasksService {
@@ -14,6 +15,7 @@ export class TasksService {
     private taskRepository: Repository<Task>,
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    private readonly usersService: UsersService,
     @InjectRedis() private readonly redis: Redis,
   ) {}
 
@@ -23,18 +25,30 @@ export class TasksService {
     return task;
   }
 
-  async getAllTasks(): Promise<Task[]> {
+  async getAllTasks(userId: number): Promise<Task[]> {
+    // Получаем задачи из кеша
     const cachedTasks = await this.redis.get('tasks');
+
+    // Получаем пользователя и его выполненные задачи
+    const user = await this.usersService.getUser(userId);
+    const completedTaskIds = user.completedTaskIds || [];
+
     if (cachedTasks) {
-      return JSON.parse(cachedTasks);
+      // Если задачи есть в кеше, то фильтруем их
+      const tasks: Task[] = JSON.parse(cachedTasks);
+      return tasks.filter((task) => !completedTaskIds.includes(task.id));
     }
 
+    // Получаем все задачи из репозитория
     const tasks = await this.taskRepository.find();
-    if (tasks) {
+
+    if (tasks.length > 0) {
+      // Кешируем полученные задачи
       this.redis.set('tasks', JSON.stringify(tasks));
     }
 
-    return tasks;
+    // Фильтруем задачи, исключая выполненные
+    return tasks.filter((task) => !completedTaskIds.includes(task.id));
   }
 
   async completeTask(userId: number, taskId: number) {

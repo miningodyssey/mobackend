@@ -40,7 +40,7 @@ export class UsersService {
     if (referer && (!user || !user.referer)) {
       const refererProfile = await this.getUser(Number(referer));
       refererProfile.referals += 1;
-      refererProfile.balance = Number(refererProfile.balance) + 50;
+      refererProfile.balance = Number(refererProfile.balance) + 500;
       await this.userRepository.save(refererProfile);
       await this.redis.set(`user:${referer}`, JSON.stringify(refererProfile));
     }

@@ -1,11 +1,11 @@
 import {
+  Body,
   Controller,
-  Post,
   Get,
-  Patch,
   Param,
   ParseIntPipe,
-  Body,
+  Patch,
+  Post,
   UseGuards,
 } from '@nestjs/common';
 import { TasksService } from './tasks.service';
@@ -23,13 +23,12 @@ export class TasksController {
     return { message: 'Task created successfully', task };
   }
 
-  @Get()
-  async getAllTasks() {
-    const tasks = await this.tasksService.getAllTasks();
-    return tasks;
+  @Get('get/:userid')
+  async getAllTasks(@Param('userid', ParseIntPipe) userid: number) {
+    return await this.tasksService.getAllTasks(userid);
   }
 
-  @Patch(':id/complete')
+  @Patch('complete/:id')
   async completeTask(
     @Param('id', ParseIntPipe) taskId: number,
     @Body('userId', ParseIntPipe) userId: number,
