@@ -35,11 +35,6 @@ jobs:
           docker build -t andreyzuikov/mobackend:${GITHUB_SHA} .
           docker push andreyzuikov/mobackend:${GITHUB_SHA}
 
-      - name: Tag latest Docker image with commit SHA as latest
-        run: |
-          docker tag andreyzuikov/mobackend:${GITHUB_SHA} andreyzuikov/mobackend:latest
-          docker push andreyzuikov/mobackend:latest
-
   deploy:
     runs-on: ubuntu-latest
     needs: build
