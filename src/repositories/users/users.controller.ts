@@ -11,7 +11,7 @@ import { UsersService } from './users.service';
 import { User } from './entity/user.entity';
 import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
 
-@Controller('stats')
+@Controller('users')
 @UseGuards(JwtAuthGuard)
 export class UsersController {
   constructor(private readonly gameDataService: UsersService) {}
