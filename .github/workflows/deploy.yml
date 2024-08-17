@@ -70,15 +70,9 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           args: ${{ env.GITHUB_SHA }}
           script: |
-            # Set environment variable
-            export GITHUB_SHA=${{ env.GITHUB_SHA }}
-            # Display SHA value
-            echo "SHA Value: {$GITHUB_SHA}"
-            
-            echo ${{ env.GITHUB_SHA }}
-
+            latest_tag=$(curl -s "https://hub.docker.com/v2/repositories/andreyzuikov/mobackend/tags/?page_size=100" | jq -r '.results[] | "\(.name) \(.last_updated)"' | sort -k2,2r | head -n1 | awk '{print $1}')
             # Update the deployment YAML with the new Docker image tag
-            sed -i "s|image: andreyzuikov/mobackend:latest|image: andreyzuikov/mobackend:${GITHUB_SHA}|" /home/andrey/mobackend/k8s/deployment.yaml
+            sed -i "s|image: andreyzuikov/mobackend:latest|image: andreyzuikov/mobackend:$latest_tag|" /home/andrey/mobackend/k8s/deployment.yaml
 
       - name: Install kubectl
         uses: appleboy/ssh-action@v0.1.4
