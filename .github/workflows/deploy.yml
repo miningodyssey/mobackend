@@ -74,6 +74,8 @@ jobs:
 
             # Display SHA value
             echo "SHA Value: {$GITHUB_SHA}"
+            
+            echo ${{ env.GITHUB_SHA }}
 
             # Update the deployment YAML with the new Docker image tag
             sed -i "s|image: andreyzuikov/mobackend:latest|image: andreyzuikov/mobackend:${GITHUB_SHA}|" /home/andrey/mobackend/k8s/deployment.yaml
