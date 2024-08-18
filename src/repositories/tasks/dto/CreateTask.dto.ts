@@ -1,8 +1,10 @@
 import { IsNotEmpty, IsString, IsNumber } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class CreateTaskDto {
   @IsNotEmpty()
   @IsNumber()
+  @Type(() => Number)
   reward: number;
 
   @IsNotEmpty()
