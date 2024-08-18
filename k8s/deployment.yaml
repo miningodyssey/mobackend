@@ -13,7 +13,7 @@ spec:
     type: RollingUpdate
     rollingUpdate:
       maxUnavailable: 0  # Указываем, что все поды должны быть доступны во время обновления
-      maxSurge: 1  # Можно запустить один дополнительный под во время обновления
+      maxSurge: 2  # Можно запустить один дополнительный под во время обновления
   template:
     metadata:
       labels:
