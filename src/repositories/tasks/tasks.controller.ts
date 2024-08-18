@@ -18,7 +18,7 @@ export class TasksController {
   constructor(private readonly tasksService: TasksService) {}
 
   @Post()
-  async createTask(@Body() createTaskDto: CreateTaskDto) {
+  async createTask(@Body('task') createTaskDto: CreateTaskDto) {
     const task = await this.tasksService.createTask(createTaskDto);
     return { message: 'Task created successfully', task };
   }
