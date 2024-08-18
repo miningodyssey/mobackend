@@ -54,14 +54,14 @@ spec:
             httpGet:
               path: /api-docs  # Предполагается, что приложение имеет эндпоинт для проверки здоровья
               port: 3000
-            initialDelaySeconds: 5
+            initialDelaySeconds: 30
             periodSeconds: 10
             failureThreshold: 3
           livenessProbe:  # Добавляем liveness-пробу
             httpGet:
               path: /api-docs
               port: 3000
-            initialDelaySeconds: 15
+            initialDelaySeconds: 60
             periodSeconds: 20
             failureThreshold: 3
       volumes:
