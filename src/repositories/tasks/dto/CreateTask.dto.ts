@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, IsUrl, IsNumber } from 'class-validator';
+import { IsNotEmpty, IsString, IsNumber } from 'class-validator';
 
 export class CreateTaskDto {
   @IsNotEmpty()
@@ -10,10 +10,10 @@ export class CreateTaskDto {
   taskDescription: string;
 
   @IsNotEmpty()
-  @IsUrl()
+  @IsString()
   imageLink: string;
 
   @IsNotEmpty()
-  @IsUrl()
+  @IsString()
   taskLink: string;
 }
