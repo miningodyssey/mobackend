@@ -59,7 +59,7 @@ export class TasksService {
       if (!user.completedTaskIds.includes(taskId)) {
         user.completedTaskIds.push(taskId);
 
-        user.balance += task.reward;
+        user.balance = user.balance + Number(task.reward);
 
         await this.userRepository.save(user);
       }
