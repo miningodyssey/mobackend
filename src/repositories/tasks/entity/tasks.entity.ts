@@ -5,8 +5,8 @@ export class Task {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'decimal', default: 500 })
-  reward: number;
+  @Column({ type: 'text', default: '500' })
+  reward: string;
 
   @Column({ type: 'text', default: 'Default description' })
   taskDescription: string;

@@ -4,8 +4,7 @@ import { Type } from 'class-transformer';
 export class CreateTaskDto {
   @IsNotEmpty()
   @IsNumber()
-  @Type(() => Number)
-  reward: number;
+  reward: string;
 
   @IsNotEmpty()
   @IsString()
