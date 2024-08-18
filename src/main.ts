@@ -9,7 +9,7 @@ async function bootstrap() {
     },
   });
   const options = new DocumentBuilder()
-    .setTitle('MOBACKEND API')
+    .setTitle('Mining Odyssey API')
     .setVersion('3.0')
     .addServer('/', 'Local environment')
     .build();
