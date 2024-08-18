@@ -8,12 +8,12 @@ export class Task {
   @Column({ type: 'decimal', default: 500 })
   reward: number;
 
-  @Column({ default: 'Default description' })
+  @Column({ type: 'string', default: 'Default description' })
   taskDescription: string;
 
-  @Column({ default: 'Default description' })
+  @Column({ type: 'string', default: 'Default description' })
   imageLink: string;
 
-  @Column({ default: 'Default description' })
+  @Column({ type: 'string', default: 'Default description' })
   taskLink: string;
 }
