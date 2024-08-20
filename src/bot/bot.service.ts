@@ -1,7 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import {Context, Telegraf} from 'telegraf';
 import * as process from "process";
-import {message} from "telegraf/filters";
 
 @Injectable()
 export class BotService {
