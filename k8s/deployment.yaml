@@ -45,11 +45,17 @@ spec:
                 secretKeyRef:
                   name: db-secrets
                   key: database_name
+            - name: BOT_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: db-secrets
+                  key: bot_token
             - name: JWT_SECRET
               valueFrom:
                 secretKeyRef:
                   name: jwt-secrets
                   key: jwt_secret
+
           readinessProbe:
             httpGet:
               path: /api-docs
