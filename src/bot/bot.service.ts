@@ -22,12 +22,14 @@ export class BotService {
                 parse_mode: 'MarkdownV2',
                 reply_markup: {
                     inline_keyboard: [[{
-                        text: 'Play Now!'
+                        text: 'Play Now!',
+                        callback_data: '123'
                     }, {
-                        text: 'FAQ'
-                    },
-                    {
-                        text: 'Check NFT'
+                        text: 'FAQ',
+                        callback_data: '123'
+                    }, {
+                        text: 'Check NFT',
+                        callback_data: '123'
                     }]],
                 },
             });
