@@ -25,16 +25,16 @@ export class BotService {
                     inline_keyboard: [
                         [
                             {
-                                text: 'Play Now!',
-                                callback_data: 'play_now',
+                                text: '🕹Play',
+                                url: 'https://t.me/MiningOdysseyBot/Game',
+                            },
+                            {
+                                text: 'Channel',
+                                url: 'https://t.me/MINING_ODYSSEY',
                             },
                             {
                                 text: 'FAQ',
-                                callback_data: 'faq',
-                            },
-                            {
-                                text: 'Check NFT',
-                                callback_data: 'check_nft',
+                                url: "https://mining-odyssey.gitbook.io/mining_odyssey",
                             },
                         ],
                     ],
