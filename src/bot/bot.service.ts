@@ -26,7 +26,7 @@ export class BotService {
                         [
                             {
                                 text: '🕹Play',
-                                url: 'https://t.me/MiningOdysseyBot/Game',
+                                web_app: { url: 'https://t.me/MiningOdysseyBot/Game' },
                             },
                             {
                                 text: 'Channel',
