@@ -65,7 +65,7 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           args: ${{ env.GITHUB_SHA }}
           script: |
-            latest_tag=$(curl -s "https://hub.docker.com/v2/repositories/andreyzuikov/mobackend/tags/?page_size=100" | jq -r '.results[] | "\(.name) \(.last_updated)"' | sort -k2,2r | head -n1 | awk '{print $1}')
+            latest_tag=$(curl -s "https://hub.docker.com/v2/repositories/andreyzuikov/mointerface/tags/?page_size=100" | jq -r '.results[] | "\(.name) \(.last_updated)"' | sort -k2,2r | head -n1 | awk '{print $1}')
             # Update the deployment YAML with the new Docker image tag
             sed -i "s|image: andreyzuikov/mobackend:latest|image: andreyzuikov/mobackend:$latest_tag|" /home/andrey/mobackend/k8s/deployment.yaml
 
