@@ -33,6 +33,7 @@ jobs:
       - name: Build and push Docker image with commit SHA
         run: |
           docker build -t andreyzuikov/mobackend:${GITHUB_SHA} .
+          docker push andreyzuikov/mointerface:latest .
           docker push andreyzuikov/mobackend:${GITHUB_SHA}
 
   deploy:
