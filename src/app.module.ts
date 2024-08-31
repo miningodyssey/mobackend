@@ -36,7 +36,6 @@ import { ConfigModule } from '@nestjs/config';
       }),
     }),
     AuthModule,
-    BotModule,
   ],
   providers: [UsersService, TasksService, AppService],
   controllers: [UsersController, TasksController, AppController],
