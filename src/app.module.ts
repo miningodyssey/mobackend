@@ -12,8 +12,6 @@ import { TasksService } from './repositories/tasks/tasks.service';
 import { TasksController } from './repositories/tasks/tasks.controller';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
-import {BotModule} from "./bot/bot.module";
-import {BotService} from "./bot/bot.service";
 
 @Module({
   imports: [
@@ -38,9 +36,9 @@ import {BotService} from "./bot/bot.service";
       }),
     }),
     AuthModule,
-    BotModule
+    BotModule,
   ],
-  providers: [UsersService, TasksService, AppService, BotService],
+  providers: [UsersService, TasksService, AppService],
   controllers: [UsersController, TasksController, AppController],
 })
 export class AppModule {}
