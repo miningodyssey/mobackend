@@ -25,7 +25,7 @@ export class TasksService {
     return task;
   }
 
-  async getAllTasks(userId: number): Promise<Task[]> {
+  async getAllTasks(userId: string): Promise<Task[]> {
     // Получаем задачи из кеша
     const cachedTasks = await this.redis.get('tasks');
 
@@ -51,7 +51,7 @@ export class TasksService {
     return tasks.filter((task) => !completedTaskIds.includes(task.id));
   }
 
-  async completeTask(userId: number, taskId: number) {
+  async completeTask(userId: string, taskId: string) {
     const user = await this.userRepository.findOne({ where: { id: userId } });
     const task = await this.taskRepository.findOne({ where: { id: taskId } });
 

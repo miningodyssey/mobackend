@@ -27,5 +27,5 @@ export class User {
   personalRecord: number;
 
   @Column({ type: 'simple-array', default: [] })
-  completedTaskIds: number[];
+  completedTaskIds: string[];
 }

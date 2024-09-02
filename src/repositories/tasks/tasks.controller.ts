@@ -24,14 +24,14 @@ export class TasksController {
   }
 
   @Get('get/:userid')
-  async getAllTasks(@Param('userid', ParseIntPipe) userid: number) {
+  async getAllTasks(@Param('userid', ParseIntPipe) userid: string) {
     return await this.tasksService.getAllTasks(userid);
   }
 
   @Patch('complete/:id')
   async completeTask(
-    @Param('id', ParseIntPipe) taskId: number,
-    @Body('userId', ParseIntPipe) userId: number,
+    @Param('id', ParseIntPipe) taskId: string,
+    @Body('userId', ParseIntPipe) userId: string,
   ) {
     await this.tasksService.completeTask(userId, taskId);
     return { message: 'Task completed successfully' };
