@@ -60,7 +60,7 @@ export class UsersService {
     let user = await this.getUser(userId);
 
     // Если пользователь существует, но у него еще не был установлен реферер
-    if (user && !user.referer && referer) {
+    if (user && (user.referer === "0") && referer) {
       const refererProfile = await this.getUser(referer);
       if (refererProfile) {
         // Увеличиваем количество рефералов у реферера
