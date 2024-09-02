@@ -44,7 +44,7 @@ export class UsersService {
       await this.redis.set(`user:${userId}`, JSON.stringify(updatedUser));
     } else {
       // Если данные не были закешированы, можно заново закешировать их из БД
-      const userFromDb = await this.userRepository.findOne(userId);
+      const userFromDb = await this.userRepository.findOne({ where: { id: userId } });
       if (userFromDb) {
         await this.redis.set(`user:${userId}`, JSON.stringify(userFromDb));
       }
