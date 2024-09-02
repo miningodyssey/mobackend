@@ -13,7 +13,7 @@ export class UsersService {
     @InjectRedis() private readonly redis: Redis,
   ) {}
 
-  async getUser(userId: number): Promise<User> {
+  async getUser(userId: string): Promise<User> {
     const cachedUser = await this.redis.get(`user:${userId}`);
     if (cachedUser) {
       return JSON.parse(cachedUser);
@@ -26,7 +26,7 @@ export class UsersService {
 
     return user;
   }
-  async updateUser(userId: number, updateData: Partial<User>) {
+  async updateUser(userId: string, updateData: Partial<User>) {
     // Обновляем данные пользователя в базе данных
     await this.userRepository.update(userId, updateData);
 
@@ -52,7 +52,7 @@ export class UsersService {
   }
 
   async createUserIfNotExists(
-      userId: number,
+      userId: string,
       userData: Partial<User>,
   ): Promise<User> {
     const { referer, ...restUserData } = userData;
@@ -61,7 +61,7 @@ export class UsersService {
 
     // Если пользователь существует, но у него еще не был установлен реферер
     if (user && !user.referer && referer) {
-      const refererProfile = await this.getUser(Number(referer));
+      const refererProfile = await this.getUser(referer);
       if (refererProfile) {
         // Увеличиваем количество рефералов у реферера
         refererProfile.referals += 1;
@@ -85,7 +85,7 @@ export class UsersService {
       });
 
       if (referer) {
-        const refererProfile = await this.getUser(Number(referer));
+        const refererProfile = await this.getUser(referer);
         if (refererProfile) {
           // Увеличиваем количество рефералов у реферера
           refererProfile.referals += 1;

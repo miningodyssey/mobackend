@@ -18,7 +18,7 @@ export class UsersController {
 
   @Get(':id')
   getUser(@Param('id') userId: string): Promise<User> {
-    return this.gameDataService.getUser(Number(userId));
+    return this.gameDataService.getUser(userId);
   }
 
   // Создание пользователя, если он не существует
@@ -27,7 +27,7 @@ export class UsersController {
     @Param('id') userId: string,
     @Body() userData: Partial<User>,
   ): Promise<User> {
-    return this.gameDataService.createUserIfNotExists(Number(userId), userData);
+    return this.gameDataService.createUserIfNotExists(userId, userData);
   }
 
   // Обновление данных пользователя
@@ -36,6 +36,6 @@ export class UsersController {
     @Param('id') userId: string,
     @Body() updateData: Partial<User>,
   ): Promise<void> {
-    return this.gameDataService.updateUser(Number(userId), updateData);
+    return this.gameDataService.updateUser(userId, updateData);
   }
 }
