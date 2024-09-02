@@ -7,7 +7,7 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('login')
-  async login(@Body('id') id: number) {
+  async login(@Body('id') id: string) {
     const user = await this.authService.validateUser(id);
     if (user) {
       return this.authService.login(user);
@@ -17,7 +17,7 @@ export class AuthController {
   }
 
   @Post('register/:id')
-  async register(@Param('id') userId: number, @Body() userData: Partial<User>) {
+  async register(@Param('id') userId: string, @Body() userData: Partial<User>) {
     return this.authService.register(userId, userData);
   }
 }

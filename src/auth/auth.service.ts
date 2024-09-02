@@ -10,7 +10,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async validateUser(id: number): Promise<User | null> {
+  async validateUser(id: string): Promise<User | null> {
     const user = await this.usersService.getUser(id);
     if (user) {
       return user;
@@ -25,7 +25,7 @@ export class AuthService {
     };
   }
 
-  async register(id: number, userData: Partial<User>) {
+  async register(id: string, userData: Partial<User>) {
     const user = await this.usersService.createUserIfNotExists(id, userData);
     return this.login(user);
   }
