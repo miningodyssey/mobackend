@@ -10,15 +10,29 @@ import {
 import { UsersService } from './users.service';
 import { User } from './entity/user.entity';
 import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
+import { BullmqService } from '../../bullmq/bullmq.service';
+import { BullmqFactory } from '../../bullmq/bullmq.factory';
 
 @Controller('users')
 @UseGuards(JwtAuthGuard)
 export class UsersController {
-  constructor(private readonly gameDataService: UsersService) {}
+  private BullMqGetUserService: BullmqService;
+  private BullMqCreateUserService: BullmqService;
+  private BullMqUpdateUserService: BullmqService;
+  constructor(
+    private readonly gameDataService: UsersService,
+    private readonly bullmqFactory: BullmqFactory,
+  ) {
+    this.BullMqCreateUserService = this.bullmqFactory.create(
+      'createUserOrGetExistingUser',
+    );
+    this.BullMqGetUserService = this.bullmqFactory.create('getUser');
+    this.BullMqUpdateUserService = this.bullmqFactory.create('updateUser');
+  }
 
   @Get(':id')
-  getUser(@Param('id') userId: string): Promise<User> {
-    return this.gameDataService.getUser(userId);
+  getUser(@Param('id') userId: string) {
+    return this.BullMqGetUserService.addJobWithResponse({ userId: userId });
   }
 
   // Создание пользователя, если он не существует
@@ -26,8 +40,11 @@ export class UsersController {
   createUserIfNotExists(
     @Param('id') userId: string,
     @Body() userData: Partial<User>,
-  ): Promise<User> {
-    return this.gameDataService.createUserIfNotExists(userId, userData);
+  ) {
+    return this.BullMqCreateUserService.addJobWithResponse({
+      userId: userId,
+      userData: userData,
+    });
   }
 
   // Обновление данных пользователя
@@ -35,7 +52,10 @@ export class UsersController {
   async updateUser(
     @Param('id') userId: string,
     @Body() updateData: Partial<User>,
-  ): Promise<void> {
-    return this.gameDataService.updateUser(userId, updateData);
+  ) {
+    return this.BullMqUpdateUserService.addJob({
+      userId: userId,
+      updateData: updateData,
+    });
   }
 }
