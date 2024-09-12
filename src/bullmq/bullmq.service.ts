@@ -13,9 +13,9 @@ export class BullmqService {
     @Inject(UsersService) private readonly usersService: UsersService,
   ) {
     this.connection = {
-      host: 'redis-55555.c150.coast-east-1-1.ru.redns.redis.com',
-      port: parseInt(process.env.REDIS_PORT || '16770'),
-      password: 'ssssss',
+      host: 'redis-17717.c300.eu-central-1-1.ec2.redns.redis-cloud.com',
+      port: parseInt(process.env.REDIS_PORT || '17717'),
+      password: '8d3jNtUHcWBU2DoRjBdvZETCzyLl50Ex',
       username: 'default',
     };
     this.queue = new Queue(queueName, {

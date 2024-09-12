@@ -1,14 +1,14 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { BullmqService } from './bullmq.service';
-import { TrackingService } from '../repositories/tracking/tracking.service';
+import { UsersService } from '../repositories/users/users.service';
 
 @Injectable()
 export class BullmqFactory {
-    constructor(
-        @Inject(TrackingService) private readonly trackingService: TrackingService
-    ) {}
+  constructor(
+    @Inject(UsersService) private readonly usersService: UsersService,
+  ) {}
 
-    create(queueName: string): BullmqService {
-        return new BullmqService(queueName, this.trackingService);
-    }
+  create(queueName: string): BullmqService {
+    return new BullmqService(queueName, this.usersService);
+  }
 }
