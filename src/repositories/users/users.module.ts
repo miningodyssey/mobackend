@@ -4,6 +4,7 @@ import { RedisModule } from '@nestjs-modules/ioredis';
 import { UsersService } from './users.service';
 import { User } from './entity/user.entity';
 import { UsersController } from './users.controller';
+import { BullmqFactory } from "../../bullmq/bullmq.factory";
 
 @Module({
   imports: [
@@ -16,7 +17,7 @@ import { UsersController } from './users.controller';
     }),
   ],
   controllers: [UsersController],
-  providers: [UsersService],
+  providers: [UsersService, BullmqFactory],
   exports: [UsersService],
 })
 export class UsersModule {}
