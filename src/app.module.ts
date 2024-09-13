@@ -12,6 +12,9 @@ import { TasksService } from './repositories/tasks/tasks.service';
 import { TasksController } from './repositories/tasks/tasks.controller';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
+import {BullMQModule} from "./bullmq/bullmq.module";
+import {UsersModule} from "./repositories/users/users.module";
+import {TasksModule} from "./repositories/tasks/tasks.module";
 
 @Module({
   imports: [
@@ -36,8 +39,10 @@ import { ConfigModule } from '@nestjs/config';
       }),
     }),
     AuthModule,
+    UsersModule,
+    TasksModule
   ],
-  providers: [UsersService, TasksService, AppService],
-  controllers: [UsersController, TasksController, AppController],
+  providers: [AppService],
+  controllers: [AppController],
 })
 export class AppModule {}
