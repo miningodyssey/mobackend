@@ -25,7 +25,6 @@ export class UsersController {
       this.BullMqCreateUserService = this.bullmqFactory.create('createUserData');
       this.BullMqUpdateUserService = this.bullmqFactory.create('updateUserData');
       this.BullMqGetUserService = this.bullmqFactory.create('getUserData');
-
   }
 
   @Get(':id')

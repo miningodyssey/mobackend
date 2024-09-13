@@ -62,6 +62,4 @@ export class BullmqService {
             console.log(`Task ${job.id} completed`);
         });
     }
-
-
 }

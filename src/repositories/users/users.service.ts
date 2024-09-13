@@ -44,7 +44,9 @@ export class UsersService {
       await this.redis.set(`user:${userId}`, JSON.stringify(updatedUser));
     } else {
       // Если данные не были закешированы, можно заново закешировать их из БД
-      const userFromDb = await this.userRepository.findOne({ where: { id: userId } });
+      const userFromDb = await this.userRepository.findOne({
+        where: { id: userId },
+      });
       if (userFromDb) {
         await this.redis.set(`user:${userId}`, JSON.stringify(userFromDb));
       }
@@ -52,15 +54,15 @@ export class UsersService {
   }
 
   async createUserIfNotExists(
-      userId: string,
-      userData: Partial<User>,
+    userId: string,
+    userData: Partial<User>,
   ): Promise<User> {
     const { referer, ...restUserData } = userData;
 
     let user = await this.getUser(userId);
 
     // Если пользователь существует, но у него еще не был установлен реферер
-    if (user && (user.referer === "0") && referer) {
+    if (user && user.referer === '0' && referer) {
       const refererProfile = await this.getUser(referer);
       if (refererProfile) {
         // Увеличиваем количество рефералов у реферера
@@ -92,7 +94,10 @@ export class UsersService {
           // Увеличиваем баланс реферера на 500
           refererProfile.balance = Number(refererProfile.balance) + 500;
           await this.userRepository.save(refererProfile);
-          await this.redis.set(`user:${referer}`, JSON.stringify(refererProfile));
+          await this.redis.set(
+            `user:${referer}`,
+            JSON.stringify(refererProfile),
+          );
 
           // Увеличиваем баланс реферала (нового пользователя) на 500
           user.balance = 500;
@@ -105,5 +110,4 @@ export class UsersService {
 
     return user;
   }
-
 }
