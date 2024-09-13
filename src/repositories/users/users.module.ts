@@ -4,7 +4,8 @@ import { RedisModule } from '@nestjs-modules/ioredis';
 import { UsersService } from './users.service';
 import { User } from './entity/user.entity';
 import { UsersController } from './users.controller';
-import { BullmqFactory } from "../../bullmq/bullmq.factory";
+import {BullmqFactory} from "../../bullmq/bullmq.factory";
+import {BullMQModule} from "../../bullmq/bullmq.module";
 
 @Module({
   imports: [
