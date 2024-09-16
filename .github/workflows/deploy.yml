@@ -146,6 +146,8 @@ jobs:
               --from-literal=database_user=${{ secrets.DATABASE_USER }} \
               --from-literal=database_password=${{ secrets.DATABASE_PASSWORD }} \
               --from-literal=database_name=${{ secrets.DATABASE_NAME }} \
+              --from-literal=database_host=${{ secrets.DATABASE_HOST }} \
+              --from-literal=database_post=${{ secrets.DATABASE_PORT }} \
               --from-literal=bot_token=${{ secrets.BOT_TOKEN }} \
               --dry-run=client -o yaml | kubectl apply -f -
 
