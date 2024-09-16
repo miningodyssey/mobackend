@@ -27,15 +27,9 @@ spec:
             - containerPort: 3000
           env:
             - name: DATABASE_HOST
-              valueFrom:
-                secretKeyRef:
-                  name: db-secrets
-                  key: database_host
+              value: "postgres-service"
             - name: DATABASE_PORT
-              valueFrom:
-                secretKeyRef:
-                  name: db-secrets
-                  key: database_port
+              value: "5432"
             - name: DATABASE_USER
               valueFrom:
                 secretKeyRef:
