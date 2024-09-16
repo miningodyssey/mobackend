@@ -24,7 +24,7 @@ import {TasksModule} from "./repositories/tasks/tasks.module";
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: process.env.DATABASE_HOST,
-      port: 5432,
+      port: 6432,
       username: process.env.DATABASE_USER,
       password: process.env.DATABASE_PASSWORD,
       database: process.env.DATABASE_NAME,
