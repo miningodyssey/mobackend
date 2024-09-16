@@ -1,169 +1,180 @@
 name: CI/CD Pipeline
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+    push:
+        branches:
+            - main
+    pull_request:
+        branches:
+            - main
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+    build:
+        runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v2
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
+            - name: Set up Docker Buildx
+              uses: docker/setup-buildx-action@v1
 
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+            - name: Log in to Docker Hub
+              uses: docker/login-action@v2
+              with:
+                  username: ${{ secrets.DOCKER_USERNAME }}
+                  password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Get short commit SHA
-        id: vars
-        run: echo "GITHUB_SHA=${GITHUB_SHA}" >> $GITHUB_ENV
+            - name: Get short commit SHA
+              id: vars
+              run: echo "GITHUB_SHA=${GITHUB_SHA}" >> $GITHUB_ENV
 
 
-      - name: Build and push Docker image with commit SHA
-        run: |
-          docker build -t andreyzuikov/mobackend:${GITHUB_SHA} .
-          docker push andreyzuikov/mobackend:${GITHUB_SHA}
+            - name: Build and push Docker image with commit SHA
+              run: |
+                  docker build -t andreyzuikov/mobackend:${GITHUB_SHA} .
+                  docker push andreyzuikov/mobackend:${GITHUB_SHA}
 
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build
+    deploy:
+        runs-on: ubuntu-latest
+        needs: build
 
-    steps:
-      - name: Install SSH Client
-        run: sudo apt-get install -y openssh-client
+        steps:
+            - name: Install SSH Client
+              run: sudo apt-get install -y openssh-client
 
-      - name: Setup protected regular
-        run: sudo sysctl fs.protected_regular=0
+            - name: Setup protected regular
+              run: sudo sysctl fs.protected_regular=0
 
-      - name: Connect to Remote VM and Pull Latest Code
-        uses: appleboy/ssh-action@v0.1.4
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
-          script: |
-            cd mobackend
-            git stash
-            git pull
+            - name: Connect to Remote VM and Pull Latest Code
+              uses: appleboy/ssh-action@v0.1.4
+              with:
+                  host: ${{ secrets.SERVER_HOST }}
+                  username: ${{ secrets.SERVER_USER }}
+                  key: ${{ secrets.SERVER_SSH_KEY }}
+                  script: |
+                      cd mobackend
+                      git stash
+                      git pull
 
-      - name: Update Deployment YAML
-        uses: appleboy/ssh-action@v0.1.4
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
-          args: ${{ env.GITHUB_SHA }}
-          script: |
-            latest_tag=$(curl -s "https://hub.docker.com/v2/repositories/andreyzuikov/mobackend/tags/?page_size=100" | jq -r '.results[] | "\(.name) \(.last_updated)"' | sort -k2,2r | head -n1 | awk '{print $1}')
-            # Update the deployment YAML with the new Docker image tag
-            sed -i "s|image: andreyzuikov/mobackend:latest|image: andreyzuikov/mobackend:$latest_tag|" /home/andrey/mobackend/k8s/deployment.yaml
+            - name: Update Deployment YAML
+              uses: appleboy/ssh-action@v0.1.4
+              with:
+                  host: ${{ secrets.SERVER_HOST }}
+                  username: ${{ secrets.SERVER_USER }}
+                  key: ${{ secrets.SERVER_SSH_KEY }}
+                  args: ${{ env.GITHUB_SHA }}
+                  script: |
+                      latest_tag=$(curl -s "https://hub.docker.com/v2/repositories/andreyzuikov/mobackend/tags/?page_size=100" | jq -r '.results[] | "\(.name) \(.last_updated)"' | sort -k2,2r | head -n1 | awk '{print $1}')
+                      # Update the deployment YAML with the new Docker image tag
+                      sed -i "s|image: andreyzuikov/mobackend:latest|image: andreyzuikov/mobackend:$latest_tag|" /home/andrey/mobackend/k8s/deployment.yaml
 
-      - name: Install kubectl
-        uses: appleboy/ssh-action@v0.1.4
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
-          script: |
-            if ! command -v kubectl &> /dev/null; then
-              sudo snap install kubectl --classic
-            fi
+            - name: Install kubectl
+              uses: appleboy/ssh-action@v0.1.4
+              with:
+                  host: ${{ secrets.SERVER_HOST }}
+                  username: ${{ secrets.SERVER_USER }}
+                  key: ${{ secrets.SERVER_SSH_KEY }}
+                  script: |
+                      if ! command -v kubectl &> /dev/null; then
+                        sudo snap install kubectl --classic
+                      fi
 
-      - name: Install Docker
-        uses: appleboy/ssh-action@v0.1.4
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
-          script: |
-            if ! command -v docker &> /dev/null; then
-              sudo apt-get update
-              sudo apt-get install -y docker.io
-              sudo usermod -aG docker $USER
-              newgrp docker
-            fi
+            - name: Install Docker
+              uses: appleboy/ssh-action@v0.1.4
+              with:
+                  host: ${{ secrets.SERVER_HOST }}
+                  username: ${{ secrets.SERVER_USER }}
+                  key: ${{ secrets.SERVER_SSH_KEY }}
+                  script: |
+                      if ! command -v docker &> /dev/null; then
+                        sudo apt-get update
+                        sudo apt-get install -y docker.io
+                        sudo usermod -aG docker $USER
+                        newgrp docker
+                      fi
 
-      - name: Install Minikube
-        uses: appleboy/ssh-action@v0.1.4
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
-          script: |
-            if ! command -v minikube &> /dev/null; then
-              curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
-              sudo install minikube-linux-amd64 /usr/local/bin/minikube
-            fi
+            - name: Install Minikube
+              uses: appleboy/ssh-action@v0.1.4
+              with:
+                  host: ${{ secrets.SERVER_HOST }}
+                  username: ${{ secrets.SERVER_USER }}
+                  key: ${{ secrets.SERVER_SSH_KEY }}
+                  script: |
+                      if ! command -v minikube &> /dev/null; then
+                        curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+                        sudo install minikube-linux-amd64 /usr/local/bin/minikube
+                      fi
 
-      - name: Start Minikube
-        uses: appleboy/ssh-action@v0.1.4
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
-          script: |
-            if ! minikube status &>/dev/null; then
-              minikube start --driver=docker --force
-            fi
+            - name: Start Minikube
+              uses: appleboy/ssh-action@v0.1.4
+              with:
+                  host: ${{ secrets.SERVER_HOST }}
+                  username: ${{ secrets.SERVER_USER }}
+                  key: ${{ secrets.SERVER_SSH_KEY }}
+                  script: |
+                      if ! minikube status &>/dev/null; then
+                        minikube start --driver=docker --force
+                      fi
 
-      - name: Set up Docker Environment
-        uses: appleboy/ssh-action@v0.1.4
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
-          script: |
-            eval $(minikube -p minikube docker-env)
+            - name: Set up Docker Environment
+              uses: appleboy/ssh-action@v0.1.4
+              with:
+                  host: ${{ secrets.SERVER_HOST }}
+                  username: ${{ secrets.SERVER_USER }}
+                  key: ${{ secrets.SERVER_SSH_KEY }}
+                  script: |
+                      eval $(minikube -p minikube docker-env)
 
-      - name: Update kubeconfig
-        uses: appleboy/ssh-action@v0.1.4
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
-          script: |
-            minikube update-context
+            - name: Update kubeconfig
+              uses: appleboy/ssh-action@v0.1.4
+              with:
+                  host: ${{ secrets.SERVER_HOST }}
+                  username: ${{ secrets.SERVER_USER }}
+                  key: ${{ secrets.SERVER_SSH_KEY }}
+                  script: |
+                      minikube update-context
 
-      - name: Apply Kubernetes Secrets
-        uses: appleboy/ssh-action@v0.1.4
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
-          script: |
-            kubectl create secret generic db-secrets \
-              --from-literal=database_user=${{ secrets.DATABASE_USER }} \
-              --from-literal=database_password=${{ secrets.DATABASE_PASSWORD }} \
-              --from-literal=database_name=${{ secrets.DATABASE_NAME }} \
-              --from-literal=database_host=${{ secrets.DATABASE_HOST }} \
-              --from-literal=database_post=${{ secrets.DATABASE_PORT }} \
-              --from-literal=bot_token=${{ secrets.BOT_TOKEN }} \
-              --dry-run=client -o yaml | kubectl apply -f -
+            - name: Apply Kubernetes Secrets
+              uses: appleboy/ssh-action@v0.1.4
+              with:
+                  host: ${{ secrets.SERVER_HOST }}
+                  username: ${{ secrets.SERVER_USER }}
+                  key: ${{ secrets.SERVER_SSH_KEY }}
+                  script: |
+                      echo "Applying db-secrets:"
+                      echo "database_user=${{ secrets.DATABASE_USER }}"
+                      echo "database_password=${{ secrets.DATABASE_PASSWORD }}"
+                      echo "database_name=${{ secrets.DATABASE_NAME }}"
+                      echo "database_host=${{ secrets.DATABASE_HOST }}"
+                      echo "database_port=${{ secrets.DATABASE_PORT }}"
+                      echo "bot_token=${{ secrets.BOT_TOKEN }}"
+                      
+                      kubectl create secret generic db-secrets \
+                        --from-literal=database_user=${{ secrets.DATABASE_USER }} \
+                        --from-literal=database_password=${{ secrets.DATABASE_PASSWORD }} \
+                        --from-literal=database_name=${{ secrets.DATABASE_NAME }} \
+                        --from-literal=database_host=${{ secrets.DATABASE_HOST }} \
+                        --from-literal=database_port=${{ secrets.DATABASE_PORT }} \
+                        --from-literal=bot_token=${{ secrets.BOT_TOKEN }} \
+                        --dry-run=client -o yaml | kubectl apply -f -
+                      
+                      echo "Applying jwt-secrets:"
+                      echo "jwt_secret=${{ secrets.JWT_SECRET }}"
+                      
+                      kubectl create secret generic jwt-secrets \
+                        --from-literal=jwt_secret=${{ secrets.JWT_SECRET }} \
+                        --dry-run=client -o yaml | kubectl apply -f -
 
-            kubectl create secret generic jwt-secrets \
-              --from-literal=jwt_secret=${{ secrets.JWT_SECRET }} \
-              --dry-run=client -o yaml | kubectl apply -f -
-
-      - name: Apply Kubernetes Manifests
-        uses: appleboy/ssh-action@v0.1.4
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
-          script: |
-            kubectl apply -f /home/andrey/mobackend/k8s/deployment.yaml
-            kubectl apply -f /home/andrey/mobackend/k8s/postgres-deployment.yaml
-            kubectl apply -f /home/andrey/mobackend/k8s/postgres-service.yaml
-            kubectl apply -f /home/andrey/mobackend/k8s/pvc.yaml
-            kubectl apply -f /home/andrey/mobackend/k8s/service.yaml
+            - name: Apply Kubernetes Manifests
+              uses: appleboy/ssh-action@v0.1.4
+              with:
+                  host: ${{ secrets.SERVER_HOST }}
+                  username: ${{ secrets.SERVER_USER }}
+                  key: ${{ secrets.SERVER_SSH_KEY }}
+                  script: |
+                      kubectl apply -f /home/andrey/mobackend/k8s/deployment.yaml
+                      kubectl apply -f /home/andrey/mobackend/k8s/postgres-deployment.yaml
+                      kubectl apply -f /home/andrey/mobackend/k8s/postgres-service.yaml
+                      kubectl apply -f /home/andrey/mobackend/k8s/pvc.yaml
+                      kubectl apply -f /home/andrey/mobackend/k8s/service.yaml
