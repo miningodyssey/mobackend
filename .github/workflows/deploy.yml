@@ -29,10 +29,11 @@ jobs:
         id: vars
         run: echo "GITHUB_SHA=${GITHUB_SHA}" >> $GITHUB_ENV
 
+
       - name: Build and push Docker image with commit SHA
         run: |
-          docker build -t andreyzuikov/mobackend:${{ env.GITHUB_SHA }} .
-          docker push andreyzuikov/mobackend:${{ env.GITHUB_SHA }}
+          docker build -t andreyzuikov/mobackend:${GITHUB_SHA} .
+          docker push andreyzuikov/mobackend:${GITHUB_SHA}
 
   deploy:
     runs-on: ubuntu-latest
@@ -62,6 +63,7 @@ jobs:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
+          args: ${{ env.GITHUB_SHA }}
           script: |
             latest_tag=$(curl -s "https://hub.docker.com/v2/repositories/andreyzuikov/mobackend/tags/?page_size=100" | jq -r '.results[] | "\(.name) \(.last_updated)"' | sort -k2,2r | head -n1 | awk '{print $1}')
             # Update the deployment YAML with the new Docker image tag
@@ -141,14 +143,15 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
             kubectl create secret generic db-secrets \
-            --from-literal=database_user=${{ secrets.DATABASE_USER }} \
-            --from-literal=database_password=${{ secrets.DATABASE_PASSWORD }} \
-            --from-literal=database_name=${{ secrets.DATABASE_NAME }} \
-            --dry-run=client -o yaml | kubectl apply -f -
-            
+              --from-literal=database_user=${{ secrets.DATABASE_USER }} \
+              --from-literal=database_password=${{ secrets.DATABASE_PASSWORD }} \
+              --from-literal=database_name=${{ secrets.DATABASE_NAME }} \
+              --from-literal=bot_token=${{ secrets.BOT_TOKEN }} \
+              --dry-run=client -o yaml | kubectl apply -f -
+
             kubectl create secret generic jwt-secrets \
-            --from-literal=jwt_secret=${{ secrets.JWT_SECRET }} \
-            --dry-run=client -o yaml | kubectl apply -f -
+              --from-literal=jwt_secret=${{ secrets.JWT_SECRET }} \
+              --dry-run=client -o yaml | kubectl apply -f -
 
       - name: Apply Kubernetes Manifests
         uses: appleboy/ssh-action@v0.1.4
