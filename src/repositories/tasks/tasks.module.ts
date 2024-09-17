@@ -6,8 +6,7 @@ import { TasksController } from './tasks.controller';
 import { Task } from './entity/tasks.entity';
 import {UsersModule} from "../users/users.module";
 import {User} from "../users/entity/user.entity";
-import * as process from 'process'
-
+import * as process from "process";
 
 @Module({
   imports: [
