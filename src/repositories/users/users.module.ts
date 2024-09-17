@@ -13,7 +13,7 @@ import {BullMQModule} from "../../bullmq/bullmq.module";
     RedisModule.forRootAsync({
       useFactory: () => ({
         type: 'single',
-        url: 'redis://:3!?sKWic58?kS+@c-c9qfdb9nluf7qu6p03uj.rw.mdb.yandexcloud.net:6379',
+        url: 'redis://:3%21%3FsKWic58%3FkS%2B@c-c9qfdb9nluf7qu6p03uj.rw.mdb.yandexcloud.net:6379',
       }),
     }),
   ],
