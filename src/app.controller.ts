@@ -8,9 +8,6 @@ export class AppController {
 
   @Get()
   getHello(): string {
-    console.log(
-        process.env.REDIS_HOST,
-        parseInt(process.env.REDIS_PORT || '6379'), process.env.REDIS_PASSWORD)
     return this.appService.getHello();
   }
 }
