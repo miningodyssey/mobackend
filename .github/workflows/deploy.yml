@@ -144,6 +144,10 @@ jobs:
           script: |
             kubectl create secret generic db-secrets \
               --from-literal=redis_connection=${{ secrets.REDIS_CONNECTION }} \
+              --from-literal=redis_host=${{ secrets.REDIS_HOST }} \
+              --from-literal=redis_password=${{ secrets.REDIS_PASSWORD }} \
+              --from-literal=redis_port=${{ secrets.REDIS_PORT }} \
+
               --from-literal=database_user=${{ secrets.DATABASE_USER }} \
               --from-literal=database_password=${{ secrets.DATABASE_PASSWORD }} \
               --from-literal=database_name=${{ secrets.DATABASE_NAME }} \
