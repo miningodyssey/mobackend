@@ -142,15 +142,8 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
-            echo "Applying db-secrets:"
-            echo "database_user=${{ secrets.DATABASE_USER }}"
-            echo "database_password=${{ secrets.DATABASE_PASSWORD }}"
-            echo "database_name=${{ secrets.DATABASE_NAME }}"
-            echo "database_host=${{ secrets.DATABASE_HOST }}"
-            echo "database_port=${{ secrets.DATABASE_PORT }}"
-            echo "bot_token=${{ secrets.BOT_TOKEN }}"
-            
             kubectl create secret generic db-secrets \
+              --from-literal=redis_connection=${{ secrets.REDIS_CONNECTION }} \
               --from-literal=database_user=${{ secrets.DATABASE_USER }} \
               --from-literal=database_password=${{ secrets.DATABASE_PASSWORD }} \
               --from-literal=database_name=${{ secrets.DATABASE_NAME }} \
@@ -158,10 +151,7 @@ jobs:
               --from-literal=database_port=${{ secrets.DATABASE_PORT }} \
               --from-literal=bot_token=${{ secrets.BOT_TOKEN }} \
               --dry-run=client -o yaml | kubectl apply -f -
-            
-            echo "Applying jwt-secrets:"
-            echo "jwt_secret=${{ secrets.JWT_SECRET }}"
-            
+          
             kubectl create secret generic jwt-secrets \
               --from-literal=jwt_secret=${{ secrets.JWT_SECRET }} \
               --dry-run=client -o yaml | kubectl apply -f -
