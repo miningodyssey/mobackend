@@ -5,7 +5,7 @@ import { UsersService } from './users.service';
 import { User } from './entity/user.entity';
 import { UsersController } from './users.controller';
 import {BullmqFactory} from "../../bullmq/bullmq.factory";
-import * as process from 'process'
+import * as process from 'process';
 
 @Module({
   imports: [
