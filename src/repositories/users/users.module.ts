@@ -5,7 +5,7 @@ import { UsersService } from './users.service';
 import { User } from './entity/user.entity';
 import { UsersController } from './users.controller';
 import {BullmqFactory} from "../../bullmq/bullmq.factory";
-import {BullMQModule} from "../../bullmq/bullmq.module";
+import * as process from 'process';
 
 @Module({
   imports: [
@@ -13,7 +13,7 @@ import {BullMQModule} from "../../bullmq/bullmq.module";
     RedisModule.forRootAsync({
       useFactory: () => ({
         type: 'single',
-        url: 'redis://:3%21%3FsKWic58%3FkS%2B@c-c9qfdb9nluf7qu6p03uj.rw.mdb.yandexcloud.net:6379',
+        url: process.env.REDIS_CONNECTION,
       }),
     }),
   ],
