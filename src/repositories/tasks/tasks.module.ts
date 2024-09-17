@@ -14,7 +14,7 @@ import * as process from "process";
     RedisModule.forRootAsync({
       useFactory: () => ({
         type: 'single',
-        url: process.env.REDIS_CONNECTION,
+        url: 'redis://default:3%21%3FsKWic58%3FkS%2B@c-c9q7gelgp0jpntsgfk4u.rw.mdb.yandexcloud.net:6379',
       }),
     }),
    UsersModule
