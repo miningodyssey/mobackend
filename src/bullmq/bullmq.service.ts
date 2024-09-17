@@ -13,6 +13,7 @@ export class BullmqService {
         @Inject(UsersService) private readonly usersService: UsersService
     ) {
         this.connection = {
+            username: '',
             host: process.env.REDIS_HOST,
             port: parseInt(process.env.REDIS_PORT || '6379'),
             password: process.env.REDIS_PASSWORD,
