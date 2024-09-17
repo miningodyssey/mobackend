@@ -13,10 +13,10 @@ export class BullmqService {
         @Inject(UsersService) private readonly usersService: UsersService
     ) {
         this.connection = {
-            host: 'redis-17717.c300.eu-central-1-1.ec2.redns.redis-cloud.com',
-            port: parseInt(process.env.REDIS_PORT || '17717'),
-            password: '8d3jNtUHcWBU2DoRjBdvZETCzyLl50Ex',
-            username: 'default',
+            host: process.env.REDIS_HOST,
+            port: parseInt(process.env.REDIS_PORT || '6379'),
+            password: process.env.REDIS_PASSWORD,
+            db: 2
         };
         this.queue = new Queue(queueName, {
             connection: this.connection,
