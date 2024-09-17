@@ -14,6 +14,7 @@ export class UsersService {
   ) {}
 
   async getUser(userId: string): Promise<User> {
+    await this.redis.select(0);
     const cachedUser = await this.redis.get(`user:${userId}`);
     if (cachedUser) {
       return JSON.parse(cachedUser);
@@ -27,6 +28,7 @@ export class UsersService {
     return user;
   }
   async updateUser(userId: string, updateData: Partial<User>) {
+    await this.redis.select(0);
     // Обновляем данные пользователя в базе данных
     await this.userRepository.update(userId, updateData);
 
@@ -58,6 +60,7 @@ export class UsersService {
     userData: Partial<User>,
   ): Promise<User> {
     const { referer, ...restUserData } = userData;
+    await this.redis.select(0);
 
     let user = await this.getUser(userId);
 

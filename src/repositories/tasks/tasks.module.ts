@@ -6,6 +6,8 @@ import { TasksController } from './tasks.controller';
 import { Task } from './entity/tasks.entity';
 import {UsersModule} from "../users/users.module";
 import {User} from "../users/entity/user.entity";
+import * as process from 'process'
+
 
 @Module({
   imports: [
@@ -13,7 +15,7 @@ import {User} from "../users/entity/user.entity";
     RedisModule.forRootAsync({
       useFactory: () => ({
         type: 'single',
-        url: 'redis://default:BWjE2eFUFrNgxvqQPdlgUmJZS133aj6p@redis-16770.c135.eu-central-1-1.ec2.redns.redis-cloud.com:16770',
+        url: process.env.REDIS_CONNECTION,
       }),
     }),
    UsersModule

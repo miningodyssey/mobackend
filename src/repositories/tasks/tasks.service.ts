@@ -20,12 +20,14 @@ export class TasksService {
   ) {}
 
   async createTask(taskData: CreateTaskDto) {
+    await this.redis.select(1);
     const task = await this.taskRepository.save(taskData);
     this.redis.set(`task:${task.id}`, JSON.stringify(task));
     return task;
   }
 
   async getAllTasks(userId: string): Promise<Task[]> {
+    await this.redis.select(1);
     // Получаем задачи из кеша
     const cachedTasks = await this.redis.get('tasks');
 
@@ -52,6 +54,7 @@ export class TasksService {
   }
 
   async completeTask(userId: string, taskId: string) {
+    await this.redis.select(1);
     const user = await this.userRepository.findOne({ where: { id: userId } });
     const task = await this.taskRepository.findOne({ where: { id: taskId } });
 
