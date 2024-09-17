@@ -8,7 +8,6 @@ export class AppController {
 
   @Get()
   getHello(): string {
-    console.log(process.env.REDIS_CONNECTION)
     return this.appService.getHello();
   }
 }
