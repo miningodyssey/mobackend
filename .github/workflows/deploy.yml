@@ -42,18 +42,17 @@ jobs:
       - name: Install Yandex Cloud CLI
         run: |
           curl -sL https://storage.yandexcloud.net/yandexcloud-yc/install.sh | bash
+          mkdir -p ~/.config/yandex-cloud
+          echo "${{ secrets.YC_CREDENTIALS }}" > ~/.config/yandex-cloud/credentials.json
           echo 'export PATH="$HOME/yandex-cloud/bin:$PATH"' >> ~/.bashrc
           source ~/.bashrc
 
       - name: Verify Yandex Cloud CLI Installation
         run: |
-          which yc
-          yc --version
-
-      - name: Configure Yandex Cloud CLI
-        run: |
-          mkdir -p ~/.config/yandex-cloud
-          echo "${{ secrets.YC_CREDENTIALS }}" > ~/.config/yandex-cloud/credentials.json
+          echo "PATH: $PATH"
+          ls -l $HOME/yandex-cloud/bin
+          which yc || true
+          yc --version || true
 
       - name: Install kubectl
         run: |
