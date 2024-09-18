@@ -42,13 +42,20 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      - name: Install Yandex Cloud CLI
+        run: |
+          curl https://storage.yandexcloud.net/yandexcloud-yc/install.sh | bash
+          echo 'source /home/runner/.bashrc' >> $GITHUB_ENV
+          echo 'export PATH="$HOME/yandex-cloud/bin:$PATH"' >> $GITHUB_ENV
+          source /home/runner/.bashrc
+          export PATH="$HOME/yandex-cloud/bin:$PATH"
+
       - name: Update Docker Image Tag in Kubernetes Manifest
         run: |
           sed -i "s|image: andreyzuikov/mobackend:.*|image: andreyzuikov/mobackend:${{ env.GITHUB_SHA }}|" k8s/deployment.yaml
 
       - name: Apply Kubernetes Secrets
         run: |
-          export PATH="$HOME/yandex-cloud/bin:$PATH"
           yc managed-kubernetes cluster get-credentials --id cat6mq8u5ndujs9rqrde --external --force
           kubectl create secret generic db-secrets \
             --from-literal=redis_connection=${{ secrets.REDIS_CONNECTION }} \
