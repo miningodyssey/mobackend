@@ -31,8 +31,6 @@ jobs:
 
       - name: Build and push Docker image with commit SHA
         run: |
-          echo "Directory contents:"
-          ls -R
           docker build -t andreyzuikov/mobackend:${GITHUB_SHA} .
           docker push andreyzuikov/mobackend:${GITHUB_SHA}
 
@@ -41,6 +39,9 @@ jobs:
     needs: build
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
       - name: Install Yandex Cloud CLI
         run: |
           curl -sL https://storage.yandexcloud.net/yandexcloud-yc/install.sh | bash
