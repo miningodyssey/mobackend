@@ -65,6 +65,10 @@ jobs:
       - name: Configure kubectl
         run: |
           export PATH="$HOME/yandex-cloud/bin:$PATH"
+          echo "${{ secrets.YANDEX_TOKEN }}" > /tmp/yandex-cloud-token.txt
+          yc config set token $(cat /tmp/yandex-cloud-token.txt)
+          yc config set cloud-id ${{ secrets.YANDEX_CLOUDID }}
+          yc config set folder-id ${{ secrets.YANDEX_FOLDERID }}
           yc managed-kubernetes cluster get-credentials --id ${{ secrets.K8S_CLUSTER_ID }} --external --force
 
       - name: Apply Kubernetes Secrets
