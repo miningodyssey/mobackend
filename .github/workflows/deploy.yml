@@ -31,6 +31,8 @@ jobs:
 
       - name: Build and push Docker image with commit SHA
         run: |
+          echo "Directory contents:"
+          ls -R
           docker build -t andreyzuikov/mobackend:${GITHUB_SHA} .
           docker push andreyzuikov/mobackend:${GITHUB_SHA}
 
