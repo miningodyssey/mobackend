@@ -90,9 +90,12 @@ jobs:
             --from-literal=jwt_secret=${{ secrets.JWT_SECRET }} \
             --dry-run=client -o yaml | kubectl apply -f -
 
-      - name: List directory contents
+      - name: List directory contents after checkout
         run: |
-          ls
+          echo "Current directory:"
+          pwd
+          echo "Directory contents:"
+          ls -R
 
       - name: Update Docker Image in Deployment YAML
         run: |
