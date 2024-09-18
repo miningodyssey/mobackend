@@ -49,6 +49,11 @@ jobs:
           echo "PATH=$PATH"
           yc --version
 
+      - name: Configure Yandex Cloud CLI
+        run: |
+          echo "${{ secrets.YANDEX_CLOUD_OAUTH_TOKEN }}" > /home/runner/yc-token
+          yc config set token $(cat /home/runner/yc-token)
+
       - name: Update Docker Image Tag in Kubernetes Manifest
         run: |
           sed -i "s|image: andreyzuikov/mobackend:.*|image: andreyzuikov/mobackend:${{ env.GITHUB_SHA }}|" k8s/deployment.yaml
