@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: mobackend-deployment
+  namespace: yandex-system  # Добавляем пространство имен
   labels:
     app: mobackend
 spec:
@@ -96,10 +97,3 @@ spec:
             initialDelaySeconds: 60
             periodSeconds: 20
             failureThreshold: 3
-      volumes:
-        - name: cache
-          emptyDir: {}
-        - name: chdata
-          emptyDir: {}
-        - name: rdsdata
-          emptyDir: {}
