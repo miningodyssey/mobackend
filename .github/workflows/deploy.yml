@@ -142,7 +142,7 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
-
+            yc managed-kubernetes cluster get-credentials --id cat6mq8u5ndujs9rqrde --external --force
             kubectl create secret generic db-secrets \
               --from-literal=redis_connection=${{ secrets.REDIS_CONNECTION }} \
               --from-literal=redis_host=${{ secrets.REDIS_HOST }} \
@@ -167,5 +167,6 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
+            yc managed-kubernetes cluster get-credentials --id cat6mq8u5ndujs9rqrde --external --force
             kubectl apply -f /home/andrey/mobackend/k8s/deployment.yaml
             kubectl apply -f /home/andrey/mobackend/k8s/service.yaml
