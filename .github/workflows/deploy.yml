@@ -90,6 +90,10 @@ jobs:
             --from-literal=jwt_secret=${{ secrets.JWT_SECRET }} \
             --dry-run=client -o yaml | kubectl apply -f -
 
+      - name: List directory contents
+        run: |
+          ls -R k8s
+
       - name: Update Docker Image in Deployment YAML
         run: |
           sed -i "s|image: andreyzuikov/mobackend:.*|image: andreyzuikov/mobackend:${GITHUB_SHA}|g" k8s/deployment.yaml
