@@ -92,6 +92,7 @@ jobs:
 
       - name: List directory contents after checkout
         run: |
+          cd ../
           echo "Current directory:"
           pwd
           echo "Directory contents:"
