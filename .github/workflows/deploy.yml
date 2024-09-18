@@ -45,10 +45,9 @@ jobs:
       - name: Install Yandex Cloud CLI
         run: |
           curl https://storage.yandexcloud.net/yandexcloud-yc/install.sh | bash
-          echo 'source /home/runner/.bashrc' >> $GITHUB_ENV
-          echo 'export PATH="$HOME/yandex-cloud/bin:$PATH"' >> $GITHUB_ENV
-          source /home/runner/.bashrc
           export PATH="$HOME/yandex-cloud/bin:$PATH"
+          echo "PATH=$PATH"
+      
 
       - name: Update Docker Image Tag in Kubernetes Manifest
         run: |
