@@ -141,9 +141,12 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
-            curl https://storage.yandexcloud.net/yandexcloud-yc/install.sh | bash
-            echo "source ~/.bashrc" >> ~/.bashrc
-            source ~/.bashrc
+            if ! command -v yc &> /dev/null; then
+              curl https://storage.yandexcloud.net/yandexcloud-yc/install.sh | bash
+              source ~/.bashrc
+              echo 'export PATH="$HOME/yandex-cloud/bin:$PATH"' >> ~/.bashrc
+              source ~/.bashrc
+            fi
 
       - name: Apply Kubernetes Secrets
         uses: appleboy/ssh-action@v0.1.4
@@ -152,6 +155,7 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
+            export PATH="$HOME/yandex-cloud/bin:$PATH"
             yc managed-kubernetes cluster get-credentials --id cat6mq8u5ndujs9rqrde --external --force
             kubectl create secret generic db-secrets \
               --from-literal=redis_connection=${{ secrets.REDIS_CONNECTION }} \
@@ -177,6 +181,7 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
+            export PATH="$HOME/yandex-cloud/bin:$PATH"
             yc managed-kubernetes cluster get-credentials --id cat6mq8u5ndujs9rqrde --external --force
             kubectl apply -f /home/andrey/mobackend/k8s/deployment.yaml
             kubectl apply -f /home/andrey/mobackend/k8s/service.yaml
