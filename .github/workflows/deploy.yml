@@ -167,7 +167,4 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
             kubectl apply -f /home/andrey/mobackend/k8s/deployment.yaml
-            kubectl apply -f /home/andrey/mobackend/k8s/postgres-deployment.yaml
-            kubectl apply -f /home/andrey/mobackend/k8s/postgres-service.yaml
-            kubectl apply -f /home/andrey/mobackend/k8s/pvc.yaml
             kubectl apply -f /home/andrey/mobackend/k8s/service.yaml
