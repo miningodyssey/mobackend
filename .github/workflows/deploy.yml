@@ -44,6 +44,8 @@ jobs:
           curl https://storage.yandexcloud.net/yandexcloud-yc/install.sh | bash
           mkdir -p ~/.config/yandex-cloud
           echo "${{ secrets.YC_CREDENTIALS }}" > ~/.config/yandex-cloud/credentials.json
+          echo 'export PATH="$HOME/yandex-cloud/bin:$PATH"' >> ~/.bashrc
+          source ~/.bashrc
 
       - name: Install kubectl
         run: |
@@ -53,7 +55,7 @@ jobs:
 
       - name: Configure kubectl
         run: |
-          yc managed-kubernetes cluster get-credentials --id cat6mq8u5ndujs9rqrde --external
+          yc managed-kubernetes cluster get-credentials --id cat6mq8u5ndujs9rqrde --external --force
 
       - name: Apply Kubernetes Secrets
         run: |
