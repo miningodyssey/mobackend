@@ -92,7 +92,7 @@ jobs:
 
       - name: List directory contents
         run: |
-          ls -R k8s
+          ls
 
       - name: Update Docker Image in Deployment YAML
         run: |
