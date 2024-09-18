@@ -47,7 +47,7 @@ jobs:
           curl https://storage.yandexcloud.net/yandexcloud-yc/install.sh | bash
           export PATH="$HOME/yandex-cloud/bin:$PATH"
           echo "PATH=$PATH"
-      
+          yc --version
 
       - name: Update Docker Image Tag in Kubernetes Manifest
         run: |
@@ -55,6 +55,8 @@ jobs:
 
       - name: Apply Kubernetes Secrets
         run: |
+          export PATH="$HOME/yandex-cloud/bin:$PATH"
+          yc --version
           yc managed-kubernetes cluster get-credentials --id cat6mq8u5ndujs9rqrde --external --force
           kubectl create secret generic db-secrets \
             --from-literal=redis_connection=${{ secrets.REDIS_CONNECTION }} \
