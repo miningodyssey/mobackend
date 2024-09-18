@@ -42,19 +42,17 @@ jobs:
       - name: Install Yandex Cloud CLI
         run: |
           curl -sL https://storage.yandexcloud.net/yandexcloud-yc/install.sh | bash
-          echo 'export PATH="$HOME/yandex-cloud/bin:$PATH"' >> $GITHUB_ENV
+          export PATH="$HOME/yandex-cloud/bin:$PATH"
+          yc --version
 
       - name: Verify Yandex Cloud CLI Installation
         run: |
-          source $GITHUB_ENV
-          echo "PATH: $PATH"
-          ls -l $HOME/yandex-cloud/bin
-          which yc || true
-          yc --version || true
+          export PATH="$HOME/yandex-cloud/bin:$PATH"
+          which yc
+          yc --version
 
       - name: Configure Yandex Cloud CLI
         run: |
-          source $GITHUB_ENV
           mkdir -p ~/.config/yandex-cloud
           echo "${{ secrets.YC_CREDENTIALS }}" > ~/.config/yandex-cloud/credentials.json
 
@@ -66,7 +64,7 @@ jobs:
 
       - name: Configure kubectl
         run: |
-          source $GITHUB_ENV
+          export PATH="$HOME/yandex-cloud/bin:$PATH"
           yc managed-kubernetes cluster get-credentials --id ${{ secrets.K8S_CLUSTER_ID }} --external --force
 
       - name: Apply Kubernetes Secrets
