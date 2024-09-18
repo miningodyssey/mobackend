@@ -39,13 +39,21 @@ jobs:
     needs: build
 
     steps:
-      - name: Set up Yandex Cloud CLI
+      - name: Install Yandex Cloud CLI
         run: |
-          curl https://storage.yandexcloud.net/yandexcloud-yc/install.sh | bash
-          mkdir -p ~/.config/yandex-cloud
-          echo "${{ secrets.YC_CREDENTIALS }}" > ~/.config/yandex-cloud/credentials.json
+          curl -sL https://storage.yandexcloud.net/yandexcloud-yc/install.sh | bash
           echo 'export PATH="$HOME/yandex-cloud/bin:$PATH"' >> ~/.bashrc
           source ~/.bashrc
+
+      - name: Verify Yandex Cloud CLI Installation
+        run: |
+          which yc
+          yc --version
+
+      - name: Configure Yandex Cloud CLI
+        run: |
+          mkdir -p ~/.config/yandex-cloud
+          echo "${{ secrets.YC_CREDENTIALS }}" > ~/.config/yandex-cloud/credentials.json
 
       - name: Install kubectl
         run: |
@@ -55,7 +63,7 @@ jobs:
 
       - name: Configure kubectl
         run: |
-          yc managed-kubernetes cluster get-credentials --id cat6mq8u5ndujs9rqrde --external --force
+          yc managed-kubernetes cluster get-credentials --id ${{ secrets.K8S_CLUSTER_ID }} --external --force
 
       - name: Apply Kubernetes Secrets
         run: |
