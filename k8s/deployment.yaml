@@ -2,7 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: mobackend-deployment
-  namespace: yandex-system  # Добавляем пространство имен
   labels:
     app: mobackend
 spec:
