@@ -59,8 +59,12 @@ export class UsersService {
     userId: string,
     userData: Partial<User>,
   ): Promise<User> {
-    const { referer, ...restUserData } = userData;
+    let { referer, ...restUserData } = userData;
     await this.redis.select(0);
+
+    if (referer === userId) {
+      referer = '0'
+    }
 
     let user = await this.getUser(userId);
 
