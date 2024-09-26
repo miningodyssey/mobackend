@@ -107,7 +107,7 @@ export class UsersService {
           );
 
           // Увеличиваем баланс реферала (нового пользователя) на 500
-          user.balance = 500;
+          user.balance += 500;
         }
       }
 
