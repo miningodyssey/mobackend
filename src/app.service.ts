@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import process from "process";
+import * as process from "process";
 
 @Injectable()
 export class AppService {
