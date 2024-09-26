@@ -5,6 +5,9 @@ export class User {
   @PrimaryColumn()
   id: string;
 
+  @Column({ nullable: true })
+  nickname: string;
+
   @Column({ type: 'decimal', default: 0 })
   balance: number;
 

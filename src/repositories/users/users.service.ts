@@ -63,7 +63,7 @@ export class UsersService {
     await this.redis.select(0);
 
     if (referer === userId) {
-      referer = '0'
+      referer = '0';
     }
 
     let user = await this.getUser(userId);
@@ -86,7 +86,7 @@ export class UsersService {
         await this.redis.set(`user:${userId}`, JSON.stringify(user));
       }
     } else if (!user) {
-      // Создаем нового пользователя, если он не существует
+      restUserData.balance = 500;
       user = this.userRepository.create({
         id: userId,
         referer,
