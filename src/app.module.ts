@@ -30,6 +30,9 @@ import {TasksModule} from "./repositories/tasks/tasks.module";
       database: process.env.DATABASE_NAME,
       entities: [User, Task],
       synchronize: true,
+      ssl: {
+        rejectUnauthorized: true,  // Для продакшена убедитесь, что сертификаты доверены
+      },
     }),
     TypeOrmModule.forFeature([User, Task]),
     RedisModule.forRootAsync({
