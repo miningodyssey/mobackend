@@ -31,7 +31,7 @@ import {TasksModule} from "./repositories/tasks/tasks.module";
       entities: [User, Task],
       synchronize: true,
       ssl: {
-        rejectUnauthorized: true,  // Для продакшена убедитесь, что сертификаты доверены
+        rejectUnauthorized: false,  // Для продакшена убедитесь, что сертификаты доверены
       },
     }),
     TypeOrmModule.forFeature([User, Task]),
