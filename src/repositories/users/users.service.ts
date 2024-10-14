@@ -145,41 +145,49 @@ export class UsersService {
         const globalTop = await this.redis.zrevrange('globalTop', 0, -1, 'WITHSCORES');
 
         let userPosition = -1;
-        const topTen: { nickname: string; balance: number }[] = [];
+        const topTen: { id: string; nickname: string; balance: number }[] = [];
 
         if (globalTop.length > 0) {
             for (let i = 0; i < globalTop.length; i += 2) {
                 const nickname = globalTop[i];
                 const balance = parseFloat(globalTop[i + 1]);
 
-                if (i < 20) {
-                    topTen.push({ nickname, balance });
-                }
+                const user = await this.userRepository.findOne({ where: { nickname } });
 
-                if (nickname === userId) {
-                    userPosition = (i / 2) + 1;
+                if (user) {
+                    if (topTen.length < 10) {
+                        topTen.push({ id: user.id, nickname, balance });
+                    }
+
+                    if (nickname === userId) {
+                        userPosition = (i / 2) + 1;
+                    }
                 }
             }
         } else {
             const users = await this.userRepository
                 .createQueryBuilder('user')
-                .select(['user.nickname', 'user.balance'])
+                .select(['user.id', 'user.nickname', 'user.balance'])
                 .orderBy('user.balance', 'DESC')
                 .getMany();
 
             for (const user of users) {
                 await this.redis.zadd('globalTop', user.balance, user.nickname);
                 if (topTen.length < 10) {
-                    topTen.push({ nickname: user.nickname, balance: user.balance });
+                    topTen.push({ id: user.id, nickname: user.nickname, balance: user.balance });
                 }
             }
 
-            const user = await this.getUser(userId);
-            userPosition = await this.redis.zrevrank('globalTop', user.nickname);
+            const currentUser = await this.getUser(userId);
+            userPosition = await this.redis.zrevrank('globalTop', currentUser.nickname);
+            if (userPosition !== null) {
+                userPosition += 1;
+            }
         }
 
         return { userPosition, topTen };
     }
+
 
 
     async getReferalsTop(userId: string): Promise<UserType[]> {
