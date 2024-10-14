@@ -23,12 +23,21 @@ export class User {
   @Column({ nullable: true })
   tgUserdata: string;
 
-  @Column({ nullable: true })
-  upgrades: string;
+  @Column({ type: 'simple-array', default: [] })
+  ownedUpgrades: string[];
+
+  @Column({ type: 'simple-array', default: [] })
+  ownedSkins: string[];
 
   @Column({ type: 'decimal', default: 0 })
   personalRecord: number;
 
   @Column({ type: 'simple-array', default: [] })
   completedTaskIds: string[];
+
+  @Column({ type: 'decimal', default: 0 })
+  earnedMoney: number;
+
+  @Column({ type: 'decimal', default: 0 })
+  earnedByReferer: number;
 }

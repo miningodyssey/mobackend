@@ -50,6 +50,15 @@ export class BullmqService {
                 if (queueName === 'createUserData') {
                     return await this.usersService.createUserIfNotExists(job.data.userId, job.data.userData);
                 }
+                if (queueName === 'getTop') {
+                    return await this.usersService.getTop(job.data.userId)
+                }
+                if (queueName === 'getReferalsTop') {
+                    return await this.usersService.getReferalsTop(job.data.userId)
+                }
+                if (queueName === 'updateTop') {
+                    return await this.usersService.finishRunAndUpdateTop(job.data.userId, job.data.coinsEarned)
+                }
             } catch (e) {
                 console.log('Error', e);
             }

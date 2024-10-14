@@ -1,6 +1,8 @@
 import { Controller, Post, Body, Param } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { User } from '../repositories/users/entity/user.entity';
+import {UserType} from "../repositories/users/types/user.type";
+import {User} from "../repositories/users/entity/user.entity";
+import {toUserEntity} from "../repositories/users/utils/toUserEntity";
 
 @Controller('auth')
 export class AuthController {
@@ -17,7 +19,7 @@ export class AuthController {
   }
 
   @Post('register/:id')
-  async register(@Param('id') userId: string, @Body() userData: Partial<User>) {
-    return this.authService.register(userId, userData);
+  async register(@Param('id') userId: string, @Body() userData: UserType) {
+    return this.authService.register(userId, toUserEntity(userData));
   }
 }
