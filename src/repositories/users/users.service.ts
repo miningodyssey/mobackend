@@ -142,55 +142,52 @@ export class UsersService {
     }
 
     async getTop(userId: string): Promise<{ userPosition: number; topTen: any[] }> {
-        const cachedTop = await this.redis.get('globalTop');
-        let globalTop: string[] = [];
+        const globalTop = await this.redis.zrevrange('globalTop', 0, -1, 'WITHSCORES');
 
-        if (cachedTop) {
-            console.log("Загружаем данные из Redis");
-            globalTop = JSON.parse(cachedTop);
+        let userPosition = -1;
+        const topTen: { id: string; nickname: string; balance: number }[] = [];
+
+        if (globalTop.length > 0) {
+            for (let i = 0; i < globalTop.length; i += 2) {
+                const nickname = globalTop[i];
+                const balance = parseFloat(globalTop[i + 1]);
+
+                const user = await this.userRepository.findOne({ where: { nickname } });
+
+                if (user) {
+                    if (topTen.length < 10) {
+                        topTen.push({ id: user.id, nickname, balance });
+                    }
+
+                    if (nickname === userId) {
+                        userPosition = (i / 2) + 1;
+                    }
+                }
+            }
         } else {
-            console.log("Загружаем данные из PostgreSQL");
             const users = await this.userRepository
                 .createQueryBuilder('user')
                 .select(['user.id', 'user.nickname', 'user.balance'])
                 .orderBy('user.balance', 'DESC')
                 .getMany();
 
-            // Заполняем zset и проверяем данные
             for (const user of users) {
-                await this.redis.zadd('globalTop', user.balance, user.nickname);
-                console.log(`Добавляем пользователя: ${user.nickname} с балансом: ${user.balance}`);
-            }
-
-            // Получаем новый кэш
-            globalTop = await this.redis.zrevrange('globalTop', 0, -1, 'WITHSCORES');
-        }
-
-        let userPosition = -1;
-        const topTen: { id: string; nickname: string; balance: number }[] = [];
-
-        // Обрабатываем данные из Redis
-        for (let i = 0; i < globalTop.length; i += 2) {
-            const nickname = globalTop[i];
-            const balance = parseFloat(globalTop[i + 1]);
-
-            const user = await this.userRepository.findOne({ where: { nickname } });
-            if (user) {
+                const nicknameToUse = user.nickname || user.id;
+                await this.redis.zadd('globalTop', user.balance, nicknameToUse);
                 if (topTen.length < 10) {
-                    topTen.push({ id: user.id, nickname, balance });
-                }
-                if (nickname === userId) {
-                    userPosition = (i / 2) + 1; // Позиция в zset
+                    topTen.push({ id: user.id, nickname: nicknameToUse, balance: user.balance });
                 }
             }
-        }
 
-        console.log(`Позиция пользователя ${userId}: ${userPosition}`);
-        console.log(`Топ-10:`, topTen);
+            const currentUser = await this.getUser(userId);
+            userPosition = await this.redis.zrevrank('globalTop', currentUser.nickname);
+            if (userPosition !== null) {
+                userPosition += 1;
+            }
+        }
 
         return { userPosition, topTen };
     }
-
 
 
 
