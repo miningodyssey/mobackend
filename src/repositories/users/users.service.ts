@@ -143,7 +143,6 @@ export class UsersService {
 
     async getTop(userId: string): Promise<{ userPosition: number; topTen: any[] }> {
         const globalTop = await this.redis.zrevrange('globalTop', 0, -1, 'WITHSCORES');
-        console.log(globalTop)
         let userPosition = -1;
         const topTen: { id: string; nickname: string; balance: number }[] = [];
 
@@ -152,14 +151,20 @@ export class UsersService {
                 const nickname = globalTop[i];
                 const balance = parseFloat(globalTop[i + 1]);
 
-                const user = await this.userRepository.findOne({ where: { nickname } });
+                let user = await this.userRepository.findOne({ where: { nickname } });
+
+                if (!user) {
+                    user = await this.userRepository.findOne({ where: { id: nickname } });
+                }
 
                 if (user) {
+                    const nicknameToUse = user.nickname || user.id;
+
                     if (topTen.length < 10) {
-                        topTen.push({ id: user.id, nickname, balance });
+                        topTen.push({ id: user.id, nickname: nicknameToUse, balance });
                     }
 
-                    if (nickname === userId) {
+                    if (nickname === userId || user.id === userId) {
                         userPosition = (i / 2) + 1;
                     }
                 }
@@ -174,6 +179,7 @@ export class UsersService {
             for (const user of users) {
                 const nicknameToUse = user.nickname || user.id;
                 await this.redis.zadd('globalTop', user.balance, nicknameToUse);
+
                 if (topTen.length < 10) {
                     topTen.push({ id: user.id, nickname: nicknameToUse, balance: user.balance });
                 }
@@ -187,8 +193,10 @@ export class UsersService {
             }
         }
 
+
         return { userPosition, topTen };
     }
+
 
 
 
