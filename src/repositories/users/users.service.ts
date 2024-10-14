@@ -143,7 +143,7 @@ export class UsersService {
 
     async getTop(userId: string): Promise<{ userPosition: number; topTen: any[] }> {
         const globalTop = await this.redis.zrevrange('globalTop', 0, -1, 'WITHSCORES');
-
+        console.log(globalTop)
         let userPosition = -1;
         const topTen: { id: string; nickname: string; balance: number }[] = [];
 
