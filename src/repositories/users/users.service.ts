@@ -142,19 +142,45 @@ export class UsersService {
     }
 
     async getTop(userId: string): Promise<{ userPosition: number; topTen: any[] }> {
-        const cachedTop = await this.redis.get('globalTop');
-        let globalTop: {
-            position: number;
-            nickname: string;
-            balance: number
-        }[] = cachedTop ? JSON.parse(cachedTop) : [];
-        const user = await this.getUser(userId);
-        const userInTop = globalTop.find(player => player.nickname === user.nickname);
-        let userPosition = userInTop ? userInTop.position : -1;
+        const globalTop = await this.redis.zrevrange('globalTop', 0, -1, 'WITHSCORES');
 
-        const topTen = globalTop.slice(0, 10);
+        let userPosition = -1;
+        const topTen: { nickname: string; balance: number }[] = [];
+
+        if (globalTop.length > 0) {
+            for (let i = 0; i < globalTop.length; i += 2) {
+                const nickname = globalTop[i];
+                const balance = parseFloat(globalTop[i + 1]);
+
+                if (i < 20) {
+                    topTen.push({ nickname, balance });
+                }
+
+                if (nickname === userId) {
+                    userPosition = (i / 2) + 1;
+                }
+            }
+        } else {
+            const users = await this.userRepository
+                .createQueryBuilder('user')
+                .select(['user.nickname', 'user.balance'])
+                .orderBy('user.balance', 'DESC')
+                .getMany();
+
+            for (const user of users) {
+                await this.redis.zadd('globalTop', user.balance, user.nickname);
+                if (topTen.length < 10) {
+                    topTen.push({ nickname: user.nickname, balance: user.balance });
+                }
+            }
+
+            const user = await this.getUser(userId);
+            userPosition = await this.redis.zrevrank('globalTop', user.nickname);
+        }
+
         return { userPosition, topTen };
     }
+
 
     async getReferalsTop(userId: string): Promise<UserType[]> {
         const cachedReferals = await this.redis.get(`allReferals:${userId}`);
@@ -166,6 +192,7 @@ export class UsersService {
             .createQueryBuilder('user')
             .where('user.referer = :userId', { userId })
             .orderBy('user.balance', 'DESC')
+            .limit(10)
             .getMany();
 
         const referalsUserType = referals.map(toUserType);
