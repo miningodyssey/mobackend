@@ -6,7 +6,6 @@ import { User } from './entity/user.entity';
 import { UsersController } from './users.controller';
 import {BullmqFactory} from "../../bullmq/bullmq.factory";
 import * as process from 'process';
-import {UsersGateway} from "./users.gateway";
 
 @Module({
   imports: [
@@ -19,7 +18,7 @@ import {UsersGateway} from "./users.gateway";
     }),
   ],
   controllers: [UsersController],
-  providers: [UsersService, BullmqFactory, UsersGateway],
+  providers: [UsersService, BullmqFactory],
   exports: [UsersService],
 })
 export class UsersModule {}
