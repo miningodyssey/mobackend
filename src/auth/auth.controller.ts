@@ -20,6 +20,6 @@ export class AuthController {
 
   @Post('register/:id')
   async register(@Param('id') userId: string, @Body() userData: UserType) {
-    return this.authService.register(userId, toUserEntity(userData));
+    return this.authService.register(userId, userData);
   }
 }
