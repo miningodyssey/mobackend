@@ -180,7 +180,8 @@ export class UsersService {
             }
 
             const currentUser = await this.getUser(userId);
-            userPosition = await this.redis.zrevrank('globalTop', currentUser.nickname);
+            const nicknameToUse = currentUser.nickname || currentUser.id;
+            userPosition = await this.redis.zrevrank('globalTop', nicknameToUse);
             if (userPosition !== null) {
                 userPosition += 1;
             }
