@@ -200,6 +200,22 @@ export class UsersService {
 
 
 
+    async getFriendsTop(userId: string): Promise<UserType[]> {
+        const cachedReferals = await this.redis.get(`allFriends:${userId}`);
+        if (cachedReferals) {
+            return JSON.parse(cachedReferals);
+        }
+
+        const referals = await this.userRepository
+            .createQueryBuilder('user')
+            .where('user.referer = :userId', { userId })
+            .orderBy('user.balance', 'DESC')
+            .getMany();
+
+        const referalsUserType = referals.map(toUserType);
+        await this.redis.set(`allFriends:${userId}`, JSON.stringify(referalsUserType));
+        return referalsUserType;
+    }
     async getReferalsTop(userId: string): Promise<UserType[]> {
         const cachedReferals = await this.redis.get(`allReferals:${userId}`);
         if (cachedReferals) {
@@ -209,8 +225,7 @@ export class UsersService {
         const referals = await this.userRepository
             .createQueryBuilder('user')
             .where('user.referer = :userId', { userId })
-            .orderBy('user.balance', 'DESC')
-            .limit(10)
+            .orderBy('user.earnedByReferer', 'DESC')
             .getMany();
 
         const referalsUserType = referals.map(toUserType);

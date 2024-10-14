@@ -24,6 +24,7 @@ export class UsersController {
     private BullMqGetReferalsTopService: BullmqService;
     private BullMqGetUpdateTopService: BullmqService;
     private BullMqGetUpdateEnergyService: BullmqService;
+    private BullMqGetFriendsTopService: BullmqService;
 
 
 
@@ -33,6 +34,7 @@ export class UsersController {
         this.BullMqGetUserService = this.bullmqFactory.create('getUserData');
         this.BullMqGetTopService = this.bullmqFactory.create('getTop');
         this.BullMqGetReferalsTopService = this.bullmqFactory.create('getReferalsTop');
+        this.BullMqGetFriendsTopService = this.bullmqFactory.create('getFriendsTop');
         this.BullMqGetUpdateTopService = this.bullmqFactory.create('updateTop');
         this.BullMqGetUpdateEnergyService = this.bullmqFactory.create('addEnergy');
 
@@ -65,6 +67,11 @@ export class UsersController {
     @Get('top/:id')
     async getTopPlayers(@Param('id') userId: string) {
         return await this.BullMqGetTopService.addJobWithResponse({userId: userId});
+    }
+
+    @Get(':id/friends')
+    async getAllFriends(@Param('id') userId: string) {
+        return await this.BullMqGetFriendsTopService.addJobWithResponse({userId: userId});
     }
 
     @Get(':id/referals')

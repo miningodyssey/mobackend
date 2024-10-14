@@ -51,6 +51,8 @@ export class BullmqService {
                         return await this.usersService.createUserIfNotExists(job.data.userId, job.data.userData);
                     case 'getTop':
                         return await this.usersService.getTop(job.data.userId);
+                    case 'getFriendsTop':
+                        return await this.usersService.getFriendsTop(job.data.userId);
                     case 'getReferalsTop':
                         return await this.usersService.getReferalsTop(job.data.userId);
                     case 'updateTop':
