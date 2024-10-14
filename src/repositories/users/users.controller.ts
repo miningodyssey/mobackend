@@ -5,7 +5,7 @@ import {
     Post,
     Body,
     Put,
-    UseGuards,
+    UseGuards, BadRequestException, NotFoundException,
 } from '@nestjs/common';
 import {UsersService} from './users.service';
 import {User} from './entity/user.entity';
@@ -23,6 +23,8 @@ export class UsersController {
     private BullMqGetTopService: BullmqService;
     private BullMqGetReferalsTopService: BullmqService;
     private BullMqGetUpdateTopService: BullmqService;
+    private BullMqGetUpdateEnergyService: BullmqService;
+
 
 
     constructor(private readonly gameDataService: UsersService, private readonly bullmqFactory: BullmqFactory) {
@@ -32,6 +34,8 @@ export class UsersController {
         this.BullMqGetTopService = this.bullmqFactory.create('getTop');
         this.BullMqGetReferalsTopService = this.bullmqFactory.create('getReferalsTop');
         this.BullMqGetUpdateTopService = this.bullmqFactory.create('updateTop');
+        this.BullMqGetUpdateEnergyService = this.bullmqFactory.create('addEnergy');
+
 
 
     }
@@ -75,5 +79,14 @@ export class UsersController {
     ) {
         await this.BullMqGetUpdateTopService.addJob({userId: userId, coinsEarned: coinsEarned});
     }
+
+    @Post(':userId/add-energy')
+    async addEnergy(
+        @Param('userId') userId: string,
+        @Body('amount') amount: number,
+    ) {
+        return await this.BullMqGetUpdateEnergyService.addJobWithResponse({userId: userId, amount: amount});
+    }
+
 
 }

@@ -1,13 +1,12 @@
-import {Injectable} from '@nestjs/common';
-import {InjectRepository} from '@nestjs/typeorm';
-import {Repository} from 'typeorm';
-import {InjectRedis} from '@nestjs-modules/ioredis';
-import {User} from './entity/user.entity';
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { InjectRedis } from '@nestjs-modules/ioredis';
+import { User } from './entity/user.entity';
 import Redis from 'ioredis';
-import {Cron} from '@nestjs/schedule';
-import {UserType} from './types/user.type';
-import {toUserType} from "./utils/toUserType";
-import {toUserEntity} from "./utils/toUserEntity";
+import { UserType } from './types/user.type';
+import { toUserType } from "./utils/toUserType";
+import { toUserEntity } from "./utils/toUserEntity";
 
 @Injectable()
 export class UsersService {
@@ -17,19 +16,15 @@ export class UsersService {
         @InjectRepository(User)
         private userRepository: Repository<User>,
         @InjectRedis() private readonly redis: Redis,
-    ) {
-    }
-
-    // Преобразование из entity User в UserType
+    ) {}
 
     async getUser(userId: string): Promise<UserType> {
-        await this.redis.select(0);
         const cachedUser = await this.redis.get(`user:${userId}`);
         if (cachedUser) {
             return JSON.parse(cachedUser);
         }
 
-        const user = await this.userRepository.findOne({where: {id: userId}});
+        const user = await this.userRepository.findOne({ where: { id: userId } });
         if (user) {
             const userType = toUserType(user);
             await this.redis.set(`user:${userId}`, JSON.stringify(userType));
@@ -40,25 +35,12 @@ export class UsersService {
     }
 
     async updateUser(userId: string, updateData: UserType) {
-        await this.redis.select(0);
         await this.userRepository.update(userId, toUserEntity(updateData));
-
-        const cachedUserData = await this.redis.get(`user:${userId}`);
-        if (cachedUserData) {
-            const user = JSON.parse(cachedUserData);
-            const updatedUser = {...user, ...updateData};
-            await this.redis.set(`user:${userId}`, JSON.stringify(updatedUser));
-        } else {
-            const userFromDb = await this.userRepository.findOne({where: {id: userId}});
-            if (userFromDb) {
-                await this.redis.set(`user:${userId}`, JSON.stringify(toUserType(userFromDb)));
-            }
-        }
+        this.redis.del(`user:${userId}`);
     }
 
     async createUserIfNotExists(userId: string, userData: UserType): Promise<UserType> {
-        await this.redis.select(0);
-        let {referer, settings, selectedSkin, selectedUpgrade, ...restUserData} = userData;
+        let { referer, settings, selectedSkin, selectedUpgrade, ...restUserData } = userData;
 
         if (referer === userId) {
             referer = '0';
@@ -84,7 +66,6 @@ export class UsersService {
                 id: userId,
                 referer,
                 balance: 5000,
-                energy: 10,
                 referals: 0,
                 settings: settings || '',
                 selectedSkin: selectedSkin || '',
@@ -106,23 +87,12 @@ export class UsersService {
             }
         }
 
+        user.remainingTime = await this.getRemainingTimeUntilNextEnergy(userId);
+
         return user;
     }
 
-    async replenishEnergy(userId: string): Promise<void> {
-        await this.redis.select(0);
-        const cachedUser = await this.redis.get(`user:${userId}`);
-        if (cachedUser) {
-            const user = JSON.parse(cachedUser);
-            if (user.energy < this.ENERGY_LIMIT) {
-                user.energy += 1;
-                await this.redis.set(`user:${userId}`, JSON.stringify(user));
-            }
-        }
-    }
-
     async finishRunAndUpdateTop(userId: string, coinsEarned: number): Promise<void> {
-        await this.redis.select(3);
         const user = await this.getUser(userId);
 
         user.balance += coinsEarned;
@@ -140,17 +110,38 @@ export class UsersService {
         await this.redis.set(`user:${userId}`, JSON.stringify(user));
     }
 
-    @Cron('0 */4 * * *') // каждые 4 часа
-    async periodicallyReplenishEnergy(): Promise<void> {
-        const keys = await this.redis.keys('user:*');
-        for (const key of keys) {
-            const userId = key.split(':')[1];
-            await this.replenishEnergy(userId);
+    async getRemainingTimeUntilNextEnergy(userId: string): Promise<number> {
+        const energyData = await this.redis.hgetall(`user:${userId}:energy`);
+        if (!energyData || !energyData.lastUpdated) {
+            return 0;
         }
+
+        const lastUpdated = parseInt(energyData.lastUpdated, 10);
+        const currentTime = Date.now();
+        const elapsedTime = currentTime - lastUpdated;
+
+        const timeToNextEnergy = (4 * 60 * 60 * 1000) - elapsedTime; // 4 часа в миллисекундах
+        return Math.max(timeToNextEnergy, 0); // Возвращаем оставшееся время, не меньше 0
+    }
+
+
+    async manuallyAddEnergy(userId: string, amount: number): Promise<{ energy: number }> {
+        const energyData = await this.redis.hgetall(`user:${userId}:energy`);
+
+        if (!energyData || Object.keys(energyData).length === 0) {
+            throw new Error(`Пользователь с id ${userId} не найден или данные о энергии отсутствуют.`);
+        }
+
+        const currentEnergy = parseInt(energyData.energy, 10);
+        const newEnergy = Math.min(currentEnergy + amount, this.ENERGY_LIMIT);
+
+        await this.redis.hset(`user:${userId}:energy`, 'energy', newEnergy.toString());
+        await this.redis.hset(`user:${userId}:energy`, 'lastUpdated', Date.now().toString()); // Обновляем время
+
+        return { energy: newEnergy }; // Возвращаем обновленное значение энергии
     }
 
     async getTop(userId: string): Promise<{ userPosition: number; topTen: any[] }> {
-        await this.redis.select(3);
         const cachedTop = await this.redis.get('globalTop');
         let globalTop: {
             position: number;
@@ -162,11 +153,10 @@ export class UsersService {
         let userPosition = userInTop ? userInTop.position : -1;
 
         const topTen = globalTop.slice(0, 10);
-        return {userPosition, topTen};
+        return { userPosition, topTen };
     }
 
     async getReferalsTop(userId: string): Promise<UserType[]> {
-        await this.redis.select(3);
         const cachedReferals = await this.redis.get(`allReferals:${userId}`);
         if (cachedReferals) {
             return JSON.parse(cachedReferals);
@@ -174,7 +164,7 @@ export class UsersService {
 
         const referals = await this.userRepository
             .createQueryBuilder('user')
-            .where('user.referer = :userId', {userId})
+            .where('user.referer = :userId', { userId })
             .orderBy('user.balance', 'DESC')
             .getMany();
 

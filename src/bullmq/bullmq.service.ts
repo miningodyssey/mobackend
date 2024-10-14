@@ -1,7 +1,8 @@
-import {Inject, Injectable} from '@nestjs/common';
-import {ConnectionOptions, Job, Queue, QueueEvents, Worker} from 'bullmq';
+import { Injectable, Inject } from '@nestjs/common';
+import { ConnectionOptions, Job, Queue, QueueEvents, Worker } from 'bullmq';
 import * as process from 'process';
-import {UsersService} from "../repositories/users/users.service";
+import { UsersService } from "../repositories/users/users.service";
+
 @Injectable()
 export class BullmqService {
     private queue: Queue;
@@ -41,23 +42,23 @@ export class BullmqService {
     private createWorker(queueName: string) {
         const worker = new Worker(queueName, async (job) => {
             try {
-                if (queueName === 'getUserData') {
-                    return await this.usersService.getUser(job.data.userId);
-                }
-                if (queueName === 'updateUserData') {
-                    return await this.usersService.updateUser(job.data.userId, job.data.updateData);
-                }
-                if (queueName === 'createUserData') {
-                    return await this.usersService.createUserIfNotExists(job.data.userId, job.data.userData);
-                }
-                if (queueName === 'getTop') {
-                    return await this.usersService.getTop(job.data.userId)
-                }
-                if (queueName === 'getReferalsTop') {
-                    return await this.usersService.getReferalsTop(job.data.userId)
-                }
-                if (queueName === 'updateTop') {
-                    return await this.usersService.finishRunAndUpdateTop(job.data.userId, job.data.coinsEarned)
+                switch (queueName) {
+                    case 'getUserData':
+                        return await this.usersService.getUser(job.data.userId);
+                    case 'updateUserData':
+                        return await this.usersService.updateUser(job.data.userId, job.data.updateData);
+                    case 'createUserData':
+                        return await this.usersService.createUserIfNotExists(job.data.userId, job.data.userData);
+                    case 'getTop':
+                        return await this.usersService.getTop(job.data.userId);
+                    case 'getReferalsTop':
+                        return await this.usersService.getReferalsTop(job.data.userId);
+                    case 'updateTop':
+                        return await this.usersService.finishRunAndUpdateTop(job.data.userId, job.data.coinsEarned);
+                    case 'addEnergy':
+                        return await this.usersService.manuallyAddEnergy(job.data.userId, job.data.amount);
+                    default:
+                        throw new Error('Unknown job type');
                 }
             } catch (e) {
                 console.log('Error', e);

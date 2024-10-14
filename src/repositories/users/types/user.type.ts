@@ -5,7 +5,6 @@ export type UserType = {
     registrationDate: string;
     referals: number;
     referer: string;
-    energy: number;
     tgUserdata?: string; // nullable
     ownedUpgrades: string[];
     ownedSkins: string[];
@@ -16,4 +15,5 @@ export type UserType = {
     selectedUpgrade: string;
     selectedSkin: string;
     settings: string;
+    remainingTime?: number;
 };
