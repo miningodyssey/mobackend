@@ -25,15 +25,14 @@ export class UsersService {
         if (cachedUser) {
             userType = JSON.parse(cachedUser);
 
-            // Проверка на наличие данных о энергии в Redis
             const energyDataExists = await this.redis.hgetall(`user:${userId}:energy`);
             if (!energyDataExists || Object.keys(energyDataExists).length === 0) {
-                // Если данные о энергии отсутствуют, создаём их
-                await this.redis.hset(`user:${userId}:energy`, 'energy', '10'); // Устанавливаем начальное значение энергии
+                await this.redis.hset(`user:${userId}:energy`, 'energy', '0');
                 await this.redis.hset(`user:${userId}:energy`, 'lastUpdated', Date.now().toString());
             }
 
-            // Обновляем информацию об оставшемся времени до следующей энергии
+            const currentEnergy = await this.redis.hget(`user:${userId}:energy`, 'energy');
+            userType.energy = parseInt(currentEnergy, 10);
             userType.remainingTime = await this.getRemainingTimeUntilNextEnergy(userId);
             return userType;
         }
@@ -43,20 +42,25 @@ export class UsersService {
             userType = toUserType(user);
             await this.redis.set(`user:${userId}`, JSON.stringify(userType));
 
-            // Проверка на наличие данных о энергии
             const energyDataExists = await this.redis.hgetall(`user:${userId}:energy`);
             if (!energyDataExists || Object.keys(energyDataExists).length === 0) {
-                await this.redis.hset(`user:${userId}:energy`, 'energy', '10'); // Устанавливаем начальное значение энергии
+                await this.redis.hset(`user:${userId}:energy`, 'energy', '0');
                 await this.redis.hset(`user:${userId}:energy`, 'lastUpdated', Date.now().toString());
             }
 
-            // Обновляем информацию об оставшемся времени до следующей энергии
+            // Получение текущей энергии
+            const currentEnergy = await this.redis.hget(`user:${userId}:energy`, 'energy');
+            const lastEnergyUpdate = await this.redis.hget(`user:${userId}:energy`, 'lastUpdated');
+
+            userType.energy = parseInt(currentEnergy, 10);
+            userType.lastUpdated = parseInt(lastEnergyUpdate)
             userType.remainingTime = await this.getRemainingTimeUntilNextEnergy(userId);
             return userType;
         }
 
-        return null; // Возвращаем null, если пользователь не найден
+        return null;
     }
+
 
     async updateUser(userId: string, updateData: UserType) {
         await this.userRepository.update(userId, toUserEntity(updateData));

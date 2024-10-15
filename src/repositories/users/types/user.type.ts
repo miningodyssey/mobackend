@@ -5,9 +5,11 @@ export type UserType = {
     registrationDate: string;
     referals: number;
     referer: string;
+    energy: number;
     tgUserdata?: string; // nullable
     ownedUpgrades: string[];
     ownedSkins: string[];
+    lastUpdated: number;
     personalRecord: number;
     completedTaskIds: string[];
     earnedMoney: number;

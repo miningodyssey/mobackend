@@ -34,6 +34,8 @@ export const toUserType = (user: User): UserType => {
         selectedSkin: '',
         selectedUpgrade: '',
         settings: '',
+        energy: 10,
+        lastUpdated: Date.now()
     };
 }
 
