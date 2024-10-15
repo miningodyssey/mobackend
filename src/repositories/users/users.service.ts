@@ -27,7 +27,7 @@ export class UsersService {
 
             const energyDataExists = await this.redis.hgetall(`user:${userId}:energy`);
             if (!energyDataExists || Object.keys(energyDataExists).length === 0) {
-                await this.redis.hset(`user:${userId}:energy`, 'energy', '0');
+                await this.redis.hset(`user:${userId}:energy`, 'energy', '10');
                 await this.redis.hset(`user:${userId}:energy`, 'lastUpdated', Date.now().toString());
             }
 
@@ -46,7 +46,7 @@ export class UsersService {
 
             const energyDataExists = await this.redis.hgetall(`user:${userId}:energy`);
             if (!energyDataExists || Object.keys(energyDataExists).length === 0) {
-                await this.redis.hset(`user:${userId}:energy`, 'energy', '0');
+                await this.redis.hset(`user:${userId}:energy`, 'energy', '10');
                 await this.redis.hset(`user:${userId}:energy`, 'lastUpdated', Date.now().toString());
             }
 
