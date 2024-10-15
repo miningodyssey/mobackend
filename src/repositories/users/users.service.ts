@@ -20,18 +20,42 @@ export class UsersService {
 
     async getUser(userId: string): Promise<UserType> {
         const cachedUser = await this.redis.get(`user:${userId}`);
+        let userType: UserType;
+
         if (cachedUser) {
-            return JSON.parse(cachedUser);
+            userType = JSON.parse(cachedUser);
+
+            // Проверка на наличие данных о энергии в Redis
+            const energyDataExists = await this.redis.hgetall(`user:${userId}:energy`);
+            if (!energyDataExists || Object.keys(energyDataExists).length === 0) {
+                // Если данные о энергии отсутствуют, создаём их
+                await this.redis.hset(`user:${userId}:energy`, 'energy', '10'); // Устанавливаем начальное значение энергии
+                await this.redis.hset(`user:${userId}:energy`, 'lastUpdated', Date.now().toString());
+            }
+
+            // Обновляем информацию об оставшемся времени до следующей энергии
+            userType.remainingTime = await this.getRemainingTimeUntilNextEnergy(userId);
+            return userType;
         }
 
         const user = await this.userRepository.findOne({ where: { id: userId } });
         if (user) {
-            const userType = toUserType(user);
+            userType = toUserType(user);
             await this.redis.set(`user:${userId}`, JSON.stringify(userType));
+
+            // Проверка на наличие данных о энергии
+            const energyDataExists = await this.redis.hgetall(`user:${userId}:energy`);
+            if (!energyDataExists || Object.keys(energyDataExists).length === 0) {
+                await this.redis.hset(`user:${userId}:energy`, 'energy', '10'); // Устанавливаем начальное значение энергии
+                await this.redis.hset(`user:${userId}:energy`, 'lastUpdated', Date.now().toString());
+            }
+
+            // Обновляем информацию об оставшемся времени до следующей энергии
+            userType.remainingTime = await this.getRemainingTimeUntilNextEnergy(userId);
             return userType;
         }
 
-        return null;
+        return null; // Возвращаем null, если пользователь не найден
     }
 
     async updateUser(userId: string, updateData: UserType) {
@@ -61,6 +85,7 @@ export class UsersService {
                 user.earnedByReferer += 5000;
                 await this.userRepository.save(toUserEntity(user));
                 await this.redis.set(`user:${userId}`, JSON.stringify(user));
+
             }
         } else if (!user) {
             user = {
@@ -76,6 +101,8 @@ export class UsersService {
 
             await this.userRepository.save(toUserEntity(user));
             await this.redis.set(`user:${userId}`, JSON.stringify(user));
+            await this.redis.hset(`user:${userId}:energy`, 'energy', '10'); // Начальное значение энергии
+            await this.redis.hset(`user:${userId}:energy`, 'lastUpdated', Date.now().toString());
 
             if (referer) {
                 const refererProfile = await this.getUser(referer);
