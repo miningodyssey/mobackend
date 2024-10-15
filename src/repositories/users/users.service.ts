@@ -58,6 +58,7 @@ export class UsersService {
 
                 user.referer = referer;
                 user.balance += 5000;
+                user.earnedByReferer += 5000;
                 await this.userRepository.save(toUserEntity(user));
                 await this.redis.set(`user:${userId}`, JSON.stringify(user));
             }
@@ -81,6 +82,7 @@ export class UsersService {
                 if (refererProfile) {
                     refererProfile.referals += 1;
                     refererProfile.balance += 5000;
+                    user.earnedByReferer += 5000;
                     await this.userRepository.save(toUserEntity(refererProfile));
                     await this.redis.set(`user:${referer}`, JSON.stringify(refererProfile));
                 }
