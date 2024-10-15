@@ -33,6 +33,8 @@ export class UsersService {
 
             const currentEnergy = await this.redis.hget(`user:${userId}:energy`, 'energy');
             userType.energy = parseInt(currentEnergy, 10);
+            const lastEnergyUpdate = await this.redis.hget(`user:${userId}:energy`, 'lastUpdated');
+            userType.lastUpdated = parseInt(lastEnergyUpdate, 10)
             userType.remainingTime = await this.getRemainingTimeUntilNextEnergy(userId);
             return userType;
         }
