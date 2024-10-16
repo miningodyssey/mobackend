@@ -61,7 +61,7 @@ export class UsersController {
         @Param('id') userId: string,
         @Body() updateData: Partial<User>,
     ) {
-        return this.BullMqUpdateUserService.addJob({userId: userId, updateData: updateData});
+        return this.BullMqUpdateUserService.addJobWithResponse({userId: userId, updateData: updateData});
     }
 
     @Get('top/:id')

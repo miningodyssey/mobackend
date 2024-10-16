@@ -67,6 +67,7 @@ export class UsersService {
     async updateUser(userId: string, updateData: UserType) {
         await this.userRepository.update(userId, toUserEntity(updateData));
         this.redis.del(`user:${userId}`);
+        return updateData;
     }
 
     async createUserIfNotExists(userId: string, userData: UserType): Promise<UserType> {
