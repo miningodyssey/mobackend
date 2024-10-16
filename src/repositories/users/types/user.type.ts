@@ -16,6 +16,6 @@ export type UserType = {
     earnedByReferer: number;
     selectedUpgrade: string;
     selectedSkin: string;
-    settings: string;
+    settings: any;
     remainingTime?: number;
 };

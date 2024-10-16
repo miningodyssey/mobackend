@@ -1,12 +1,12 @@
-import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { InjectRedis } from '@nestjs-modules/ioredis';
-import { User } from './entity/user.entity';
+import {Injectable} from '@nestjs/common';
+import {InjectRepository} from '@nestjs/typeorm';
+import {Repository} from 'typeorm';
+import {InjectRedis} from '@nestjs-modules/ioredis';
+import {User} from './entity/user.entity';
 import Redis from 'ioredis';
-import { UserType } from './types/user.type';
-import { toUserType } from "./utils/toUserType";
-import { toUserEntity } from "./utils/toUserEntity";
+import {UserType} from './types/user.type';
+import {toUserType} from "./utils/toUserType";
+import {toUserEntity} from "./utils/toUserEntity";
 
 @Injectable()
 export class UsersService {
@@ -17,6 +17,39 @@ export class UsersService {
         private userRepository: Repository<User>,
         @InjectRedis() private readonly redis: Redis,
     ) {}
+
+    async initializeUserSettings(userId: string) {
+        const defaultSettings = {
+            theme: 'light',               // Пример настройки темы
+            notificationsEnabled: 'true', // Пример настройки уведомлений
+        };
+
+        // Проверяем, если ли уже сохранённые настройки
+        const existingSettings = await this.redis.hgetall(`user:${userId}:settings`);
+        if (!existingSettings || Object.keys(existingSettings).length === 0) {
+            // Если настроек нет, то инициализируем с дефолтными значениями
+            await this.redis.hmset(`user:${userId}:settings`, defaultSettings);
+        }
+        return defaultSettings
+    }
+
+    // Получение настроек пользователя из Redis
+    async getUserSettings(userId: string): Promise<Record<string, string>> {
+        const settings = await this.redis.hgetall(`user:${userId}:settings`);
+        if (!settings || Object.keys(settings).length === 0) {
+            return null; // Возвращаем null, если настроек нет
+        }
+        return settings;
+    }
+
+    // Обновление настроек пользователя вручную
+    async updateUserSettings(userId: string, newSettings: Record<string, string>) {
+        // Обновляем каждую настройку в Redis
+        for (const key in newSettings) {
+            await this.redis.hset(`user:${userId}:settings`, key, newSettings[key]);
+        }
+        return newSettings
+    }
 
     async getUser(userId: string): Promise<UserType> {
         const cachedUser = await this.redis.get(`user:${userId}`);
@@ -30,12 +63,17 @@ export class UsersService {
                 await this.redis.hset(`user:${userId}:energy`, 'energy', '10');
                 await this.redis.hset(`user:${userId}:energy`, 'lastUpdated', Date.now().toString());
             }
+            let settings = await this.getUserSettings(userId)
+            if (!settings || Object.keys(energyDataExists).length === 0) {
+                settings = await this.initializeUserSettings(userId)
+            }
 
             const currentEnergy = await this.redis.hget(`user:${userId}:energy`, 'energy');
             userType.energy = parseInt(currentEnergy, 10);
             const lastEnergyUpdate = await this.redis.hget(`user:${userId}:energy`, 'lastUpdated');
             userType.lastUpdated = parseInt(lastEnergyUpdate, 10)
             userType.remainingTime = await this.getRemainingTimeUntilNextEnergy(userId);
+            userType.settings = settings
             return userType;
         }
 
@@ -110,7 +148,7 @@ export class UsersService {
             await this.redis.set(`user:${userId}`, JSON.stringify(user));
             await this.redis.hset(`user:${userId}:energy`, 'energy', '10'); // Начальное значение энергии
             await this.redis.hset(`user:${userId}:energy`, 'lastUpdated', Date.now().toString());
-
+            user.settings = await this.initializeUserSettings(userId);
             if (referer) {
                 const refererProfile = await this.getUser(referer);
                 if (refererProfile) {

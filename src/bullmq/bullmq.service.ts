@@ -59,6 +59,8 @@ export class BullmqService {
                         return await this.usersService.finishRunAndUpdateTop(job.data.userId, job.data.coinsEarned);
                     case 'addEnergy':
                         return await this.usersService.manuallyAddEnergy(job.data.userId, job.data.amount);
+                    case 'updateSetting':
+                        return await this.usersService.updateUserSettings(job.data.userId, job.data.newSettings)
                     default:
                         throw new Error('Unknown job type');
                 }

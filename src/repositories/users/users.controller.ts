@@ -25,6 +25,7 @@ export class UsersController {
     private BullMqGetUpdateTopService: BullmqService;
     private BullMqGetUpdateEnergyService: BullmqService;
     private BullMqGetFriendsTopService: BullmqService;
+    private BullMqUpdateSettingsService: BullmqService;
 
 
 
@@ -37,6 +38,7 @@ export class UsersController {
         this.BullMqGetFriendsTopService = this.bullmqFactory.create('getFriendsTop');
         this.BullMqGetUpdateTopService = this.bullmqFactory.create('updateTop');
         this.BullMqGetUpdateEnergyService = this.bullmqFactory.create('addEnergy');
+        this.BullMqUpdateSettingsService = this.bullmqFactory.create('updateSetting');
 
 
 
@@ -95,5 +97,15 @@ export class UsersController {
         return await this.BullMqGetUpdateEnergyService.addJobWithResponse({userId: userId, amount: amount});
     }
 
-
+    @Put(':id/settings')
+    async updateUserSettings(
+        @Param('id') userId: string,
+        @Body() newSettings: Record<string, string>,
+    ) {
+        try {
+            return await this.BullMqUpdateSettingsService.addJobWithResponse({userId: userId,newSettings: newSettings});;
+        } catch (error) {
+            throw new BadRequestException('Ошибка при обновлении настроек');
+        }
+    }
 }
