@@ -160,7 +160,7 @@ export class UsersService {
     }
 
 
-    async manuallyAddEnergy(userId: string, amount: number): Promise<{ energy: number }> {
+    async manuallyAddEnergy(userId: string, amount: number): Promise<{ energy: number, lastUpdated: string }> {
         const energyData = await this.redis.hgetall(`user:${userId}:energy`);
 
         if (!energyData || Object.keys(energyData).length === 0) {
@@ -169,11 +169,11 @@ export class UsersService {
 
         const currentEnergy = parseInt(energyData.energy, 10);
         const newEnergy = Math.min(currentEnergy + amount, this.ENERGY_LIMIT);
-
+        const updateDate = Date.now().toString()
         await this.redis.hset(`user:${userId}:energy`, 'energy', newEnergy.toString());
-        await this.redis.hset(`user:${userId}:energy`, 'lastUpdated', Date.now().toString()); // Обновляем время
+        await this.redis.hset(`user:${userId}:energy`, 'lastUpdated', updateDate); // Обновляем время
 
-        return { energy: newEnergy }; // Возвращаем обновленное значение энергии
+        return { energy: newEnergy, lastUpdated: updateDate}; // Возвращаем обновленное значение энергии
     }
 
     async getTop(userId: string): Promise<{ userPosition: number; topTen: any[] }> {
