@@ -57,19 +57,22 @@ export class UsersService {
   }
 
   async getUser(userId: string): Promise<UserType> {
-    // Используем pipeline для минимизации количества операций Redis
     const pipeline = this.redis.pipeline();
     pipeline.get(`user:${userId}`);
     pipeline.hgetall(`user:${userId}:energy`);
     pipeline.hget(`user:${userId}:energy`, 'lastUpdated');
-    const [cachedUser, energyData, lastEnergyUpdate] = await pipeline.exec();
+    const results: [unknown, unknown, unknown] = await pipeline.exec();
+
+    const cachedUser = results[0];
+    const energyData = results[1];
+    const lastEnergyUpdate = results[2];
 
     let userType: UserType;
 
-    if (cachedUser[1]) {
-      userType = JSON.parse(cachedUser[1]);
+    // Проверяем, есть ли кэшированный пользователь
+    if (cachedUser && typeof cachedUser === 'string') {
+      userType = JSON.parse(cachedUser);
 
-      // Если данных о энергии нет, инициализируем
       if (!energyData || Object.keys(energyData).length === 0) {
         await this.redis.hset(
           `user:${userId}:energy`,
@@ -79,7 +82,11 @@ export class UsersService {
           Date.now().toString(),
         );
       } else {
-        await this.updateEnergy(userId, parseInt(lastEnergyUpdate[1], 10));
+        const lastUpdatedTime =
+          lastEnergyUpdate && typeof lastEnergyUpdate === 'string'
+            ? parseInt(lastEnergyUpdate, 10)
+            : Date.now();
+        await this.updateEnergy(userId, lastUpdatedTime);
       }
 
       userType.energy = parseInt(
@@ -94,7 +101,6 @@ export class UsersService {
       return userType;
     }
 
-    // Пользователь не найден в Redis, проверяем в PostgreSQL
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (user) {
       userType = toUserType(user);
@@ -112,7 +118,11 @@ export class UsersService {
           Date.now().toString(),
         );
       } else {
-        await this.updateEnergy(userId, parseInt(lastEnergyUpdate[1], 10));
+        const lastUpdatedTime =
+          lastEnergyUpdate && typeof lastEnergyUpdate === 'string'
+            ? parseInt(lastEnergyUpdate, 10)
+            : Date.now();
+        await this.updateEnergy(userId, lastUpdatedTime);
       }
 
       userType.energy = parseInt(
