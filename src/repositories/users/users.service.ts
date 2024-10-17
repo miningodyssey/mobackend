@@ -44,7 +44,6 @@ export class UsersService {
     return settings;
   }
 
-  // Обновление настроек пользователя вручную
   async updateUserSettings(
     userId: string,
     newSettings: Record<string, string>,
@@ -61,19 +60,24 @@ export class UsersService {
     pipeline.get(`user:${userId}`);
     pipeline.hgetall(`user:${userId}:energy`);
     pipeline.hget(`user:${userId}:energy`, 'lastUpdated');
-    const results: [unknown, unknown, unknown] = await pipeline.exec();
 
-    const cachedUser = results[0];
-    const energyData = results[1];
-    const lastEnergyUpdate = results[2];
+    const results: [Error | null, unknown][] = await pipeline.exec();
+
+    const [userError, cachedUser] = results[0];
+    const [energyError, energyData] = results[1];
+    const [lastUpdateError, lastEnergyUpdate] = results[2];
+
+    if (userError || energyError || lastUpdateError) {
+      throw new Error('Error fetching data from Redis');
+    }
 
     let userType: UserType;
 
-    // Проверяем, есть ли кэшированный пользователь
     if (cachedUser && typeof cachedUser === 'string') {
-      userType = JSON.parse(cachedUser);
+      userType = JSON.parse(cachedUser as string);
 
-      if (!energyData || Object.keys(energyData).length === 0) {
+      // Если данных о энергии нет, инициализируем
+      if (!energyData || Object.keys(energyData as object).length === 0) {
         await this.redis.hset(
           `user:${userId}:energy`,
           'energy',
@@ -84,7 +88,7 @@ export class UsersService {
       } else {
         const lastUpdatedTime =
           lastEnergyUpdate && typeof lastEnergyUpdate === 'string'
-            ? parseInt(lastEnergyUpdate, 10)
+            ? parseInt(lastEnergyUpdate as string, 10)
             : Date.now();
         await this.updateEnergy(userId, lastUpdatedTime);
       }
@@ -120,7 +124,7 @@ export class UsersService {
       } else {
         const lastUpdatedTime =
           lastEnergyUpdate && typeof lastEnergyUpdate === 'string'
-            ? parseInt(lastEnergyUpdate, 10)
+            ? parseInt(lastEnergyUpdate as string, 10)
             : Date.now();
         await this.updateEnergy(userId, lastUpdatedTime);
       }
@@ -136,10 +140,9 @@ export class UsersService {
       return userType;
     }
 
-    return null; // Пользователь не найден
+    return null;
   }
 
-  // Вынесенная функция для обновления энергии
   private async updateEnergy(
     userId: string,
     lastEnergyUpdate: number,
