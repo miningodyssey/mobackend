@@ -7,6 +7,7 @@ import Redis from 'ioredis';
 import { UserType } from './types/user.type';
 import { toUserType } from './utils/toUserType';
 import { toUserEntity } from './utils/toUserEntity';
+import { createUserType } from './types/createUser.type';
 
 @Injectable()
 export class UsersService {
@@ -170,10 +171,9 @@ export class UsersService {
 
   async createUserIfNotExists(
     userId: string,
-    userData: UserType,
+    userData: createUserType,
   ): Promise<UserType> {
-    let { referer, settings, selectedSkin, selectedUpgrade, ...restUserData } =
-      userData;
+    let { referer, ...restUserData } = userData;
 
     if (referer === userId) {
       referer = '0';
@@ -181,6 +181,7 @@ export class UsersService {
 
     let user = await this.getUser(userId);
 
+    // Если пользователь существует, проверяем реферера
     if (user && user.referer === '0' && referer) {
       const refererProfile = await this.getUser(referer);
       if (refererProfile) {
@@ -196,26 +197,37 @@ export class UsersService {
         await this.redis.set(`user:${userId}`, JSON.stringify(user));
       }
     } else if (!user) {
+      // Создаем нового пользователя, баланс задаем на сервере
       user = {
         id: userId,
         referer,
-        balance: 5000,
+        energy: 10,
+        lastUpdated: Date.now(),
+        nickname: '',
+        remainingTime: 0,
+        selectedSkin: '',
+        selectedUpgrade: '',
+        settings: undefined,
+        balance: 5000, // Начальный баланс задается на сервере
         referals: 0,
-        settings: settings || '',
-        selectedSkin: selectedSkin || '',
-        selectedUpgrade: selectedUpgrade || '',
+        ownedUpgrades: [],
+        ownedSkins: [],
+        completedTaskIds: [],
+        earnedMoney: 0,
+        earnedByReferer: 0,
         ...restUserData,
       };
 
       await this.userRepository.save(toUserEntity(user));
       await this.redis.set(`user:${userId}`, JSON.stringify(user));
-      await this.redis.hset(`user:${userId}:energy`, 'energy', '10'); // Начальное значение энергии
+      await this.redis.hset(`user:${userId}:energy`, 'energy', '10');
       await this.redis.hset(
         `user:${userId}:energy`,
         'lastUpdated',
         Date.now().toString(),
       );
       user.settings = await this.initializeUserSettings(userId);
+
       if (referer) {
         const refererProfile = await this.getUser(referer);
         if (refererProfile) {

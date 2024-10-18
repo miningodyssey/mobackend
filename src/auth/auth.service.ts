@@ -2,9 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../repositories/users/users.service';
 import { User } from '../repositories/users/entity/user.entity';
-import {UserType} from "../repositories/users/types/user.type";
-import {toUserEntity} from "../repositories/users/utils/toUserEntity";
-import {toUserType} from "../repositories/users/utils/toUserType";
+import { toUserEntity } from '../repositories/users/utils/toUserEntity';
+import { createUserType } from '../repositories/users/types/createUser.type';
 
 @Injectable()
 export class AuthService {
@@ -28,8 +27,10 @@ export class AuthService {
     };
   }
 
-  async register(id: string, userData: UserType) {
-    const user = toUserEntity(await this.usersService.createUserIfNotExists(id, userData));
+  async register(id: string, userData: createUserType) {
+    const user = toUserEntity(
+      await this.usersService.createUserIfNotExists(id, userData),
+    );
     return this.login(user);
   }
 }
