@@ -206,7 +206,6 @@ export class UsersService {
         }
       }
 
-      // Проверка на наличие выбранных скина и апгрейда
       if (!user.selectedSkin) {
         const selections = await this.getUserSelections(userId);
         user.selectedSkin = selections?.selectedSkin || 'defaultSkin';
@@ -227,7 +226,6 @@ export class UsersService {
         );
       }
     } else {
-      // Создание нового пользователя с инициализацией выбранного скина и апгрейда
       const selections = await this.getUserSelections(userId);
       const selectedSkin = selections?.selectedSkin || 'defaultSkin';
       const selectedUpgrade = selections?.selectedUpgrade || 'defaultUpgrade';
@@ -242,7 +240,6 @@ export class UsersService {
       );
       await this.saveUserToDatabase(user);
 
-      // Инициализация настроек пользователя
       user.settings = await this.initializeUserSettings(userId);
 
       if (referer) {
@@ -257,7 +254,6 @@ export class UsersService {
       }
     }
 
-    // Обновление оставшегося времени до следующей энергии
     user.remainingTime = await this.getRemainingTimeUntilNextEnergy(userId);
 
     return user;
@@ -339,7 +335,6 @@ export class UsersService {
   ) {
     const pipeline = this.redis.pipeline();
 
-    // Сохраняем выбранный апгрейд
     pipeline.hset(
       `user:${userId}:selections`,
       'selectedUpgrade',
@@ -405,9 +400,7 @@ export class UsersService {
     const energyData = await this.redis.hgetall(`user:${userId}:energy`);
 
     if (!energyData || Object.keys(energyData).length === 0) {
-      throw new Error(
-        `Пользователь с id ${userId} не найден или данные о энергии отсутствуют.`,
-      );
+      throw new Error(`User not found.`);
     }
 
     const currentEnergy = parseInt(energyData.energy, 10);

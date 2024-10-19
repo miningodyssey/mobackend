@@ -3,6 +3,7 @@ import { AuthService } from './auth.service';
 import {UserType} from "../repositories/users/types/user.type";
 import {User} from "../repositories/users/entity/user.entity";
 import {toUserEntity} from "../repositories/users/utils/toUserEntity";
+import { createUserType } from "../repositories/users/types/createUser.type";
 
 @Controller('auth')
 export class AuthController {
@@ -19,7 +20,7 @@ export class AuthController {
   }
 
   @Post('register/:id')
-  async register(@Param('id') userId: string, @Body() userData: UserType) {
+  async register(@Param('id') userId: string, @Body() userData: createUserType) {
     return this.authService.register(userId, userData);
   }
 }
