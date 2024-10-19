@@ -20,7 +20,7 @@ export class AuthService {
     return null;
   }
 
-  async login(user: createUserType) {
+  async login(user: User) {
     const payload = {
       sub: user.tgUserdata,
       registrationDate: user.registrationDate,

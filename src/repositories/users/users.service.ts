@@ -194,7 +194,6 @@ export class UsersService {
     let user = await this.getUser(userId);
 
     if (user) {
-      // Проверка реферера, если у пользователя его еще нет
       if (user.referer === '0' && referer) {
         const refererProfile = await this.getUser(referer);
         if (refererProfile) {
