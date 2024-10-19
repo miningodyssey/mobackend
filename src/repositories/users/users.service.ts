@@ -19,6 +19,13 @@ export class UsersService {
     @InjectRedis() private readonly redis: Redis,
   ) {}
 
+  async ensureKeyType(key: string, expectedType: string): Promise<void> {
+    const actualType = await this.redis.type(key);
+    if (actualType !== expectedType) {
+      await this.redis.del(key); // Удаляем ключ, если тип данных не совпадает
+    }
+  }
+
   async initializeUserSettings(userId: string) {
     const defaultSettings = {
       theme: 'light', // Пример настройки темы
@@ -331,16 +338,15 @@ export class UsersService {
     selectedUpgrade: string,
     selectedSkin: string,
   ) {
+    const key = `user:${userId}:selections`;
+
+    // Убедимся, что ключ используется как хеш
+    await this.ensureKeyType(key, 'hash');
+
     const pipeline = this.redis.pipeline();
 
-    pipeline.hset(
-      `user:${userId}:selections`,
-      'selectedUpgrade',
-      selectedUpgrade,
-    );
-
-    // Сохраняем выбранный скин
-    pipeline.hset(`user:${userId}:selections`, 'selectedSkin', selectedSkin);
+    pipeline.hset(key, 'selectedUpgrade', selectedUpgrade);
+    pipeline.hset(key, 'selectedSkin', selectedSkin);
 
     await pipeline.exec();
   }
