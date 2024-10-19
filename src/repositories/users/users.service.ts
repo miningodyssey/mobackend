@@ -9,6 +9,17 @@ import { toUserType } from './utils/toUserType';
 import { toUserEntity } from './utils/toUserEntity';
 import { createUserType } from './types/createUser.type';
 
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { InjectRedis } from '@nestjs-modules/ioredis';
+import Redis from 'ioredis';
+import { User } from './entity/user.entity';
+import { UserType } from './types/user.type';
+import { toUserType } from './utils/toUserType';
+import { toUserEntity } from './utils/toUserEntity';
+import { createUserType } from './types/createUser.type';
+
 @Injectable()
 export class UsersService {
   private readonly ENERGY_LIMIT = 10;
@@ -19,6 +30,7 @@ export class UsersService {
     @InjectRedis() private readonly redis: Redis,
   ) {}
 
+  // Метод для проверки типа ключа в Redis
   async ensureKeyType(key: string, expectedType: string): Promise<void> {
     const actualType = await this.redis.type(key);
     if (actualType !== expectedType) {
@@ -26,48 +38,68 @@ export class UsersService {
     }
   }
 
+  // Инициализация настроек пользователя
   async initializeUserSettings(userId: string) {
     const defaultSettings = {
-      theme: 'light', // Пример настройки темы
-      notificationsEnabled: 'true', // Пример настройки уведомлений
+      theme: 'light',
+      notificationsEnabled: 'true',
     };
 
-    // Проверяем, если ли уже сохранённые настройки
-    const existingSettings = await this.redis.hgetall(
-      `user:${userId}:settings`,
-    );
+    const key = `user:${userId}:settings`;
+
+    // Убедимся, что ключ используется как хеш
+    await this.ensureKeyType(key, 'hash');
+
+    const existingSettings = await this.redis.hgetall(key);
     if (!existingSettings || Object.keys(existingSettings).length === 0) {
-      // Если настроек нет, то инициализируем с дефолтными значениями
-      await this.redis.hmset(`user:${userId}:settings`, defaultSettings);
+      await this.redis.hmset(key, defaultSettings);
     }
     return defaultSettings;
   }
 
   // Получение настроек пользователя из Redis
   async getUserSettings(userId: string): Promise<Record<string, string>> {
-    const settings = await this.redis.hgetall(`user:${userId}:settings`);
+    const key = `user:${userId}:settings`;
+
+    // Убедимся, что ключ используется как хеш
+    await this.ensureKeyType(key, 'hash');
+
+    const settings = await this.redis.hgetall(key);
     if (!settings || Object.keys(settings).length === 0) {
-      return null; // Возвращаем null, если настроек нет
+      return null;
     }
     return settings;
   }
 
+  // Обновление настроек пользователя
   async updateUserSettings(
     userId: string,
     newSettings: Record<string, string>,
   ) {
-    // Обновляем каждую настройку в Redis
-    for (const key in newSettings) {
-      await this.redis.hset(`user:${userId}:settings`, key, newSettings[key]);
+    const key = `user:${userId}:settings`;
+
+    // Убедимся, что ключ используется как хеш
+    await this.ensureKeyType(key, 'hash');
+
+    for (const keySetting in newSettings) {
+      await this.redis.hset(key, keySetting, newSettings[keySetting]);
     }
     return newSettings;
   }
 
+  // Получение пользователя
   async getUser(userId: string): Promise<UserType> {
+    const userKey = `user:${userId}`;
+    const energyKey = `user:${userId}:energy`;
+
+    // Убедимся, что ключи используются как строка и хеш
+    await this.ensureKeyType(userKey, 'string');
+    await this.ensureKeyType(energyKey, 'hash');
+
     const pipeline = this.redis.pipeline();
-    pipeline.get(`user:${userId}`);
-    pipeline.hgetall(`user:${userId}:energy`);
-    pipeline.hget(`user:${userId}:energy`, 'lastUpdated');
+    pipeline.get(userKey);
+    pipeline.hgetall(energyKey);
+    pipeline.hget(energyKey, 'lastUpdated');
 
     const results: [Error | null, unknown][] = await pipeline.exec();
 
@@ -84,10 +116,9 @@ export class UsersService {
     if (cachedUser && typeof cachedUser === 'string') {
       userType = JSON.parse(cachedUser as string);
 
-      // Если данных о энергии нет, инициализируем
       if (!energyData || Object.keys(energyData as object).length === 0) {
         await this.redis.hset(
-          `user:${userId}:energy`,
+          energyKey,
           'energy',
           '10',
           'lastUpdated',
@@ -102,7 +133,7 @@ export class UsersService {
       }
 
       userType.energy = parseInt(
-        await this.redis.hget(`user:${userId}:energy`, 'energy'),
+        await this.redis.hget(energyKey, 'energy'),
         10,
       );
       userType.lastUpdated = Date.now();
@@ -121,14 +152,12 @@ export class UsersService {
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (user) {
       userType = toUserType(user);
-      await this.redis.set(`user:${userId}`, JSON.stringify(userType));
+      await this.redis.set(userKey, JSON.stringify(userType));
 
-      const energyDataExists = await this.redis.hgetall(
-        `user:${userId}:energy`,
-      );
+      const energyDataExists = await this.redis.hgetall(energyKey);
       if (!energyDataExists || Object.keys(energyDataExists).length === 0) {
         await this.redis.hset(
-          `user:${userId}:energy`,
+          energyKey,
           'energy',
           '10',
           'lastUpdated',
@@ -143,7 +172,7 @@ export class UsersService {
       }
 
       userType.energy = parseInt(
-        await this.redis.hget(`user:${userId}:energy`, 'energy'),
+        await this.redis.hget(energyKey, 'energy'),
         10,
       );
       userType.lastUpdated = Date.now();
@@ -156,25 +185,7 @@ export class UsersService {
     return null;
   }
 
-  private async updateEnergy(
-    userId: string,
-    lastEnergyUpdate: number,
-  ): Promise<void> {
-    const currentTime = Date.now();
-    const hoursPassed = Math.floor(
-      (currentTime - lastEnergyUpdate) / (4 * 60 * 60 * 1000),
-    );
-
-    if (hoursPassed > 0) {
-      await this.manuallyAddEnergy(userId, hoursPassed);
-      await this.redis.hset(
-        `user:${userId}:energy`,
-        'lastUpdated',
-        currentTime.toString(),
-      );
-    }
-  }
-
+  // Обновление данных пользователя
   async updateUser(userId: string, updateData: UserType) {
     try {
       await this.userRepository.update(userId, toUserEntity(updateData));
@@ -188,6 +199,7 @@ export class UsersService {
     }
   }
 
+  // Создание нового пользователя, если он не существует
   async createUserIfNotExists(
     userId: string,
     userData: createUserType,
@@ -264,6 +276,26 @@ export class UsersService {
     return user;
   }
 
+  private async updateRefererAndUserBalances(
+    user: UserType,
+    refererProfile: UserType,
+    referer: string,
+  ) {
+    refererProfile.referals += 1;
+    refererProfile.balance += 5000;
+    user.referer = referer;
+    user.balance += 5000;
+    user.earnedByReferer += 5000;
+
+    await Promise.all([
+      this.userRepository.save(toUserEntity(refererProfile)),
+      this.userRepository.save(toUserEntity(user)),
+      this.redis.set('user:${referer}', JSON.stringify(refererProfile)),
+      this.redis.set('user:${user.id}', JSON.stringify(user)),
+    ]);
+  }
+
+  // Создание нового пользователя
   private createNewUser(
     userId: string,
     referer: string,
@@ -286,7 +318,7 @@ export class UsersService {
       balance: 5000,
       referals: 0,
       ownedUpgrades: [],
-      ownedSkins: [],
+      ownedSkins: ['0'],
       completedTaskIds: [],
       earnedMoney: 0,
       earnedByReferer: 0,
@@ -295,44 +327,39 @@ export class UsersService {
     };
   }
 
-  private async saveUserToDatabase(user: UserType) {
+  // Сохранение пользователя в базе данных
+  async saveUserToDatabase(user: UserType) {
+    const newUser = this.userRepository.create(toUserEntity(user));
+    await this.userRepository.save(newUser);
+
     await Promise.all([
-      this.userRepository.save(toUserEntity(user)),
       this.redis.set(`user:${user.id}`, JSON.stringify(user)),
-      this.redis.hset(`user:${user.id}:energy`, 'energy', '10'),
       this.redis.hset(
         `user:${user.id}:energy`,
         'lastUpdated',
         Date.now().toString(),
       ),
-      this.redis.hset(`user:${user.id}`, 'selectedSkin', user.selectedSkin),
-      this.redis.hset(
-        `user:${user.id}`,
-        'selectedUpgrade',
-        user.selectedUpgrade,
-      ),
     ]);
   }
 
-  private async updateRefererAndUserBalances(
-    user: UserType,
-    refererProfile: UserType,
-    referer: string,
-  ) {
-    refererProfile.referals += 1;
-    refererProfile.balance += 5000;
-    user.referer = referer;
-    user.balance += 5000;
-    user.earnedByReferer += 5000;
+  // Получение текущих настроек пользователя
+  async getUserSelections(
+    userId: string,
+  ): Promise<{ selectedUpgrade: string; selectedSkin: string }> {
+    const key = `user:${userId}:selections`;
 
-    await Promise.all([
-      this.userRepository.save(toUserEntity(refererProfile)),
-      this.userRepository.save(toUserEntity(user)),
-      this.redis.set(`user:${referer}`, JSON.stringify(refererProfile)),
-      this.redis.set(`user:${user.id}`, JSON.stringify(user)),
-    ]);
+    // Убедимся, что ключ используется как хеш
+    await this.ensureKeyType(key, 'hash');
+
+    const selections = await this.redis.hgetall(key);
+
+    return {
+      selectedUpgrade: selections.selectedUpgrade || '',
+      selectedSkin: selections.selectedSkin || '',
+    };
   }
 
+  // Сохранение выборов пользователя (скин и улучшение)
   async saveUserSelections(
     userId: string,
     selectedUpgrade: string,
@@ -524,5 +551,23 @@ export class UsersService {
       JSON.stringify(referalsUserType),
     );
     return referalsUserType;
+  }
+  private async updateEnergy(
+    userId: string,
+    lastEnergyUpdate: number,
+  ): Promise<void> {
+    const currentTime = Date.now();
+    const hoursPassed = Math.floor(
+      (currentTime - lastEnergyUpdate) / (4 * 60 * 60 * 1000),
+    );
+
+    if (hoursPassed > 0) {
+      await this.manuallyAddEnergy(userId, hoursPassed);
+      await this.redis.hset(
+        'user:${userId}:energy',
+        'lastUpdated',
+        currentTime.toString(),
+      );
+    }
   }
 }
