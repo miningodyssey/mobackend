@@ -195,7 +195,6 @@ export class UsersService {
     let user = await this.getUser(userId); // Проверяем, существует ли пользователь
 
     if (user) {
-      console.log('User exists, checking selections.');
 
       if (!user.selectedSkin) {
         const selections = await this.getUserSelections(userId); // Получаем данные из Redis
@@ -203,7 +202,6 @@ export class UsersService {
         await this.redis.hset(`user:${userId}:selections`, {
           selectedSkin: user.selectedSkin,
         }); // Обновляем Redis
-        console.log('Selected skin initialized:', user.selectedSkin);
       }
 
       if (!user.selectedUpgrade) {
@@ -213,7 +211,6 @@ export class UsersService {
         await this.redis.hset(`user:${userId}:selections`, {
           selectedUpgrade: user.selectedUpgrade,
         }); // Обновляем Redis
-        console.log('Selected upgrade initialized:', user.selectedUpgrade);
       }
     } else {
       // Если пользователя нет, создаём нового
@@ -230,12 +227,10 @@ export class UsersService {
         userData.registrationDate,
       );
 
-      console.log('New user created:', userId);
 
       await this.saveUserToDatabase(user); // Сохраняем в базе данных и Redis
 
       user.settings = await this.initializeUserSettings(userId); // Инициализируем настройки пользователя
-      console.log('User settings initialized');
 
       if (referer) {
         const refererProfile = await this.getUser(referer);
@@ -245,16 +240,11 @@ export class UsersService {
             refererProfile,
             referer,
           );
-          console.log('Referer and user balances updated');
         }
       }
     }
 
     user.remainingTime = await this.getRemainingTimeUntilNextEnergy(userId); // Получаем оставшееся время
-    console.log(
-      'Remaining time until next energy calculated:',
-      user.remainingTime,
-    );
 
     return user; // Возвращаем пользователя
   }
@@ -334,9 +324,6 @@ export class UsersService {
     const keyExists = await this.redis.exists(key);
 
     if (!keyExists) {
-      console.log(
-        `Key ${key} does not exist. Initializing with default values.`,
-      );
       const defaultSelections = {
         selectedUpgrade: 'defaultUpgrade',
         selectedSkin: 'defaultSkin',
