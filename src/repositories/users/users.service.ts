@@ -254,7 +254,6 @@ export class UsersService {
     }
 
     user.remainingTime = await this.getRemainingTimeUntilNextEnergy(userId);
-    console.log(user)
     return user;
   }
 

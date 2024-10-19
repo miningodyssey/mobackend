@@ -7,6 +7,7 @@ async function bootstrap() {
     cors: {
       origin: '*',
     },
+    logger: ['error', 'warn'],
   });
   const options = new DocumentBuilder()
     .setTitle('Mining Odyssey API')
