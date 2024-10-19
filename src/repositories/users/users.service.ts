@@ -185,7 +185,7 @@ export class UsersService {
     userId: string,
     userData: createUserType,
   ): Promise<UserType> {
-    let { referer, ...restUserData } = userData;
+    let { referer } = userData;
 
     if (referer === userId) {
       referer = '0';
@@ -254,7 +254,7 @@ export class UsersService {
     }
 
     user.remainingTime = await this.getRemainingTimeUntilNextEnergy(userId);
-
+    console.log(user)
     return user;
   }
 
