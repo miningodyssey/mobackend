@@ -279,7 +279,7 @@ export class UsersService {
       balance: 5000,
       referals: 0,
       ownedUpgrades: [],
-      ownedSkins: ['0'],
+      ownedSkins: [],
       completedTaskIds: [],
       earnedMoney: 0,
       earnedByReferer: 0,
