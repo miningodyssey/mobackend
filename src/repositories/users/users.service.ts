@@ -378,17 +378,6 @@ export class UsersService {
     await pipeline.exec();
   }
 
-  async getUserSelections(
-    userId: string,
-  ): Promise<{ selectedUpgrade: string; selectedSkin: string }> {
-    const selections = await this.redis.hgetall(`user:${userId}:selections`);
-
-    return {
-      selectedUpgrade: selections.selectedUpgrade || '',
-      selectedSkin: selections.selectedSkin || '',
-    };
-  }
-
   async finishRunAndUpdateTop(
     userId: string,
     coinsEarned: number,
