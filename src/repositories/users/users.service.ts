@@ -36,7 +36,6 @@ export class UsersService {
 
     const key = `user:${userId}:settings`;
 
-    // Убедимся, что ключ используется как хеш
     await this.ensureKeyType(key, 'hash');
 
     const existingSettings = await this.redis.hgetall(key);
@@ -46,11 +45,9 @@ export class UsersService {
     return defaultSettings;
   }
 
-  // Получение настроек пользователя из Redis
   async getUserSettings(userId: string): Promise<Record<string, string>> {
     const key = `user:${userId}:settings`;
 
-    // Убедимся, что ключ используется как хеш
     await this.ensureKeyType(key, 'hash');
 
     const settings = await this.redis.hgetall(key);
@@ -60,14 +57,12 @@ export class UsersService {
     return settings;
   }
 
-  // Обновление настроек пользователя
   async updateUserSettings(
     userId: string,
     newSettings: Record<string, string>,
   ) {
     const key = `user:${userId}:settings`;
 
-    // Убедимся, что ключ используется как хеш
     await this.ensureKeyType(key, 'hash');
 
     for (const keySetting in newSettings) {
@@ -76,12 +71,10 @@ export class UsersService {
     return newSettings;
   }
 
-  // Получение пользователя
   async getUser(userId: string): Promise<UserType> {
     const userKey = `user:${userId}`;
     const energyKey = `user:${userId}:energy`;
 
-    // Убедимся, что ключи используются как строка и хеш
     await this.ensureKeyType(userKey, 'string');
     await this.ensureKeyType(energyKey, 'hash');
 
@@ -279,8 +272,8 @@ export class UsersService {
     await Promise.all([
       this.userRepository.save(toUserEntity(refererProfile)),
       this.userRepository.save(toUserEntity(user)),
-      this.redis.set('user:${referer}', JSON.stringify(refererProfile)),
-      this.redis.set('user:${user.id}', JSON.stringify(user)),
+      this.redis.set(`user:${referer}`, JSON.stringify(refererProfile)),
+      this.redis.set(`user:${user.id}`, JSON.stringify(user)),
     ]);
   }
 
@@ -316,7 +309,6 @@ export class UsersService {
     };
   }
 
-  // Сохранение пользователя в базе данных
   async saveUserToDatabase(user: UserType) {
     const newUser = this.userRepository.create(toUserEntity(user));
     await this.userRepository.save(newUser);
@@ -331,7 +323,6 @@ export class UsersService {
     ]);
   }
 
-  // Получение текущих настроек пользователя
   async getUserSelections(
     userId: string,
   ): Promise<{ selectedUpgrade: string; selectedSkin: string }> {
@@ -542,7 +533,7 @@ export class UsersService {
     if (hoursPassed > 0) {
       await this.manuallyAddEnergy(userId, hoursPassed);
       await this.redis.hset(
-        'user:${userId}:energy',
+        `user:${userId}:energy`,
         'lastUpdated',
         currentTime.toString(),
       );
