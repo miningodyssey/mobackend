@@ -1,6 +1,7 @@
-import { Entity, PrimaryColumn, Column } from 'typeorm';
+import { Entity, PrimaryColumn, Column, Unique } from 'typeorm';
 
 @Entity()
+@Unique(['nickname'])
 export class User {
   @PrimaryColumn()
   id: string;
@@ -23,16 +24,16 @@ export class User {
   @Column({ nullable: true })
   tgUserdata: string;
 
-  @Column({ type: 'simple-array', default: [] })
+  @Column({ type: 'simple-array', nullable: true })
   ownedUpgrades: string[];
 
-  @Column({ type: 'simple-array', default: [] })
+  @Column({ type: 'simple-array', nullable: true })
   ownedSkins: string[];
 
   @Column({ type: 'decimal', default: 0 })
   personalRecord: number;
 
-  @Column({ type: 'simple-array', default: [] })
+  @Column({ type: 'simple-array', nullable: true })
   completedTaskIds: string[];
 
   @Column({ type: 'decimal', default: 0 })

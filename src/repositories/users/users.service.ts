@@ -102,7 +102,12 @@ export class UsersService {
       userType.remainingTime =
         await this.getRemainingTimeUntilNextEnergy(userId);
       userType.settings = await this.getUserSettings(userId);
-
+      const selected = await this.getUserSelections(userId);
+      userType = {
+        ...userType,
+        selectedSkin: selected.selectedSkin,
+        selectedUpgrade: selected.selectedUpgrade,
+      };
       return userType;
     }
 
@@ -164,9 +169,16 @@ export class UsersService {
   }
 
   async updateUser(userId: string, updateData: UserType) {
-    await this.userRepository.update(userId, toUserEntity(updateData));
-    this.redis.del(`user:${userId}`);
-    return updateData;
+    try {
+      await this.userRepository.update(userId, toUserEntity(updateData));
+      this.redis.del(`user:${userId}`);
+      return updateData;
+    } catch (error) {
+      if (error.code === '23505') {
+        throw new Error('Nickname already in use');
+      }
+      throw error;
+    }
   }
 
   async createUserIfNotExists(
@@ -197,8 +209,8 @@ export class UsersService {
         await this.redis.set(`user:${userId}`, JSON.stringify(user));
       }
     } else if (!user) {
-      // Создаем нового пользователя, баланс задаем на сервере
       user = {
+        personalRecord: 0,
         id: userId,
         referer,
         energy: 10,
@@ -208,10 +220,10 @@ export class UsersService {
         selectedSkin: '',
         selectedUpgrade: '',
         settings: undefined,
-        balance: 5000, // Начальный баланс задается на сервере
+        balance: 5000,
         referals: 0,
         ownedUpgrades: [],
-        ownedSkins: [],
+        ownedSkins: ['0'],
         completedTaskIds: [],
         earnedMoney: 0,
         earnedByReferer: 0,
@@ -242,10 +254,60 @@ export class UsersService {
         }
       }
     }
+    const selections = await this.getUserSelections(userId);
+
+    if (!user.selectedSkin) {
+      user.selectedSkin = selections?.selectedSkin || 'defaultSkin';
+      await this.redis.hset(
+        `user:${userId}`,
+        'selectedSkin',
+        user.selectedSkin,
+      );
+    }
+
+    if (!user.selectedUpgrade) {
+      user.selectedUpgrade = selections?.selectedUpgrade || 'defaultUpgrade';
+      await this.redis.hset(
+        `user:${userId}`,
+        'selectedUpgrade',
+        user.selectedUpgrade,
+      );
+    }
 
     user.remainingTime = await this.getRemainingTimeUntilNextEnergy(userId);
 
     return user;
+  }
+
+  async saveUserSelections(
+    userId: string,
+    selectedUpgrade: string,
+    selectedSkin: string,
+  ) {
+    const pipeline = this.redis.pipeline();
+
+    // Сохраняем выбранный апгрейд
+    pipeline.hset(
+      `user:${userId}:selections`,
+      'selectedUpgrade',
+      selectedUpgrade,
+    );
+
+    // Сохраняем выбранный скин
+    pipeline.hset(`user:${userId}:selections`, 'selectedSkin', selectedSkin);
+
+    await pipeline.exec();
+  }
+
+  async getUserSelections(
+    userId: string,
+  ): Promise<{ selectedUpgrade: string; selectedSkin: string }> {
+    const selections = await this.redis.hgetall(`user:${userId}:selections`);
+
+    return {
+      selectedUpgrade: selections.selectedUpgrade || '',
+      selectedSkin: selections.selectedSkin || '',
+    };
   }
 
   async finishRunAndUpdateTop(
@@ -279,8 +341,8 @@ export class UsersService {
     const currentTime = Date.now();
     const elapsedTime = currentTime - lastUpdated;
 
-    const timeToNextEnergy = 4 * 60 * 60 * 1000 - elapsedTime; // 4 часа в миллисекундах
-    return Math.max(timeToNextEnergy, 0); // Возвращаем оставшееся время, не меньше 0
+    const timeToNextEnergy = 4 * 60 * 60 * 1000 - elapsedTime;
+    return Math.max(timeToNextEnergy, 0);
   }
 
   async manuallyAddEnergy(
@@ -393,6 +455,7 @@ export class UsersService {
     );
     return referalsUserType;
   }
+
   async getReferalsTop(userId: string): Promise<UserType[]> {
     const cachedReferals = await this.redis.get(`allReferals:${userId}`);
     if (cachedReferals) {
