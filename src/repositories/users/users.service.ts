@@ -200,11 +200,9 @@ export class UsersService {
       if (!user.selectedSkin) {
         const selections = await this.getUserSelections(userId); // Получаем данные из Redis
         user.selectedSkin = selections.selectedSkin || 'defaultSkin'; // Устанавливаем значение по умолчанию
-        await this.redis.set(
-          `user:${userId}:selections`,
-          'selectedSkin',
-          user.selectedSkin,
-        ); // Обновляем Redis
+        await this.redis.hset(`user:${userId}:selections`, {
+          selectedSkin: user.selectedSkin,
+        }); // Обновляем Redis
         console.log('Selected skin initialized:', user.selectedSkin);
       }
 
@@ -212,11 +210,9 @@ export class UsersService {
         // Если улучшение не установлено
         const selections = await this.getUserSelections(userId); // Получаем данные из Redis
         user.selectedUpgrade = selections.selectedUpgrade || 'defaultUpgrade'; // Устанавливаем значение по умолчанию
-        await this.redis.hset(
-          `user:${userId}:selections`,
-          'selectedUpgrade',
-          user.selectedUpgrade,
-        ); // Обновляем Redis
+        await this.redis.hset(`user:${userId}:selections`, {
+          selectedUpgrade: user.selectedUpgrade,
+        }); // Обновляем Redis
         console.log('Selected upgrade initialized:', user.selectedUpgrade);
       }
     } else {
