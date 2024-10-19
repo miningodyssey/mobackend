@@ -191,9 +191,8 @@ export class UsersService {
     if (referer === userId) {
       referer = '0';
     }
-
     let user = await this.getUser(userId);
-
+    console.log('getUser');
     if (user) {
       if (user.referer === '0' && referer) {
         const refererProfile = await this.getUser(referer);
@@ -205,7 +204,7 @@ export class UsersService {
           );
         }
       }
-
+      console.log('updateRefererAndUserBalances');
       if (!user.selectedSkin) {
         const selections = await this.getUserSelections(userId);
         user.selectedSkin = selections?.selectedSkin || 'defaultSkin';
@@ -215,6 +214,7 @@ export class UsersService {
           user.selectedSkin,
         );
       }
+      console.log('getUserSelections');
 
       if (!user.selectedUpgrade) {
         const selections = await this.getUserSelections(userId);
@@ -224,9 +224,11 @@ export class UsersService {
           'selectedUpgrade',
           user.selectedUpgrade,
         );
+        console.log('getUserSelections');
       }
     } else {
       const selections = await this.getUserSelections(userId);
+      console.log('getUserSelections');
       const selectedSkin = selections?.selectedSkin || 'defaultSkin';
       const selectedUpgrade = selections?.selectedUpgrade || 'defaultUpgrade';
 
@@ -238,9 +240,13 @@ export class UsersService {
         userData.tgUserdata,
         userData.registrationDate,
       );
+      console.log('createNewUser');
+
       await this.saveUserToDatabase(user);
+      console.log('saveUserToDatabase');
 
       user.settings = await this.initializeUserSettings(userId);
+      console.log('initializeUserSettings');
 
       if (referer) {
         const refererProfile = await this.getUser(referer);
@@ -250,11 +256,13 @@ export class UsersService {
             refererProfile,
             referer,
           );
+          console.log('updateRefererAndUserBalances');
         }
       }
     }
 
     user.remainingTime = await this.getRemainingTimeUntilNextEnergy(userId);
+    console.log('getRemainingTimeUntilNextEnergy');
     return user;
   }
 
