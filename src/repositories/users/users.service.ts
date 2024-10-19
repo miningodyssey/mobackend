@@ -189,48 +189,41 @@ export class UsersService {
     let { referer } = userData;
 
     if (referer === userId) {
-      referer = '0';
+      referer = '0'; // Нельзя быть реферером самому себе
     }
-    let user = await this.getUser(userId);
-    console.log('getUser');
+
+    let user = await this.getUser(userId); // Проверяем, существует ли пользователь
+
     if (user) {
-      if (user.referer === '0' && referer) {
-        const refererProfile = await this.getUser(referer);
-        if (refererProfile) {
-          await this.updateRefererAndUserBalances(
-            user,
-            refererProfile,
-            referer,
-          );
-        }
-      }
-      console.log('updateRefererAndUserBalances');
+      console.log('User exists, checking selections.');
+
       if (!user.selectedSkin) {
-        const selections = await this.getUserSelections(userId);
-        user.selectedSkin = selections?.selectedSkin || 'defaultSkin';
-        await this.redis.hset(
-          `user:${userId}`,
+        const selections = await this.getUserSelections(userId); // Получаем данные из Redis
+        user.selectedSkin = selections.selectedSkin || 'defaultSkin'; // Устанавливаем значение по умолчанию
+        await this.redis.set(
+          `user:${userId}:selections`,
           'selectedSkin',
           user.selectedSkin,
-        );
+        ); // Обновляем Redis
+        console.log('Selected skin initialized:', user.selectedSkin);
       }
-      console.log('getUserSelections');
 
       if (!user.selectedUpgrade) {
-        const selections = await this.getUserSelections(userId);
-        user.selectedUpgrade = selections?.selectedUpgrade || 'defaultUpgrade';
+        // Если улучшение не установлено
+        const selections = await this.getUserSelections(userId); // Получаем данные из Redis
+        user.selectedUpgrade = selections.selectedUpgrade || 'defaultUpgrade'; // Устанавливаем значение по умолчанию
         await this.redis.hset(
-          `user:${userId}`,
+          `user:${userId}:selections`,
           'selectedUpgrade',
           user.selectedUpgrade,
-        );
-        console.log('getUserSelections');
+        ); // Обновляем Redis
+        console.log('Selected upgrade initialized:', user.selectedUpgrade);
       }
     } else {
-      const selections = await this.getUserSelections(userId);
-      console.log('getUserSelections');
-      const selectedSkin = selections?.selectedSkin || 'defaultSkin';
-      const selectedUpgrade = selections?.selectedUpgrade || 'defaultUpgrade';
+      // Если пользователя нет, создаём нового
+      const selections = await this.getUserSelections(userId); // Получаем данные из Redis
+      const selectedSkin = selections.selectedSkin || 'defaultSkin';
+      const selectedUpgrade = selections.selectedUpgrade || 'defaultUpgrade';
 
       user = this.createNewUser(
         userId,
@@ -240,13 +233,13 @@ export class UsersService {
         userData.tgUserdata,
         userData.registrationDate,
       );
-      console.log('createNewUser');
 
-      await this.saveUserToDatabase(user);
-      console.log('saveUserToDatabase');
+      console.log('New user created:', userId);
 
-      user.settings = await this.initializeUserSettings(userId);
-      console.log('initializeUserSettings');
+      await this.saveUserToDatabase(user); // Сохраняем в базе данных и Redis
+
+      user.settings = await this.initializeUserSettings(userId); // Инициализируем настройки пользователя
+      console.log('User settings initialized');
 
       if (referer) {
         const refererProfile = await this.getUser(referer);
@@ -256,14 +249,18 @@ export class UsersService {
             refererProfile,
             referer,
           );
-          console.log('updateRefererAndUserBalances');
+          console.log('Referer and user balances updated');
         }
       }
     }
 
-    user.remainingTime = await this.getRemainingTimeUntilNextEnergy(userId);
-    console.log('getRemainingTimeUntilNextEnergy');
-    return user;
+    user.remainingTime = await this.getRemainingTimeUntilNextEnergy(userId); // Получаем оставшееся время
+    console.log(
+      'Remaining time until next energy calculated:',
+      user.remainingTime,
+    );
+
+    return user; // Возвращаем пользователя
   }
 
   private async updateRefererAndUserBalances(
@@ -336,18 +333,29 @@ export class UsersService {
   ): Promise<{ selectedUpgrade: string; selectedSkin: string }> {
     const key = `user:${userId}:selections`;
 
-    // Убедимся, что ключ используется как хеш
     await this.ensureKeyType(key, 'hash');
+
+    const keyExists = await this.redis.exists(key);
+
+    if (!keyExists) {
+      console.log(
+        `Key ${key} does not exist. Initializing with default values.`,
+      );
+      const defaultSelections = {
+        selectedUpgrade: 'defaultUpgrade',
+        selectedSkin: 'defaultSkin',
+      };
+      await this.redis.hset(key, defaultSelections); // Инициализируем Redis ключ с дефолтными значениями
+    }
 
     const selections = await this.redis.hgetall(key);
 
     return {
-      selectedUpgrade: selections.selectedUpgrade || '',
-      selectedSkin: selections.selectedSkin || '',
+      selectedUpgrade: selections.selectedUpgrade || 'defaultUpgrade',
+      selectedSkin: selections.selectedSkin || 'defaultSkin',
     };
   }
 
-  // Сохранение выборов пользователя (скин и улучшение)
   async saveUserSelections(
     userId: string,
     selectedUpgrade: string,
@@ -355,7 +363,6 @@ export class UsersService {
   ) {
     const key = `user:${userId}:selections`;
 
-    // Убедимся, что ключ используется как хеш
     await this.ensureKeyType(key, 'hash');
 
     const pipeline = this.redis.pipeline();
