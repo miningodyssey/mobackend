@@ -193,90 +193,143 @@ export class UsersService {
 
     let user = await this.getUser(userId);
 
-    // Если пользователь существует, проверяем реферера
-    if (user && user.referer === '0' && referer) {
-      const refererProfile = await this.getUser(referer);
-      if (refererProfile) {
-        refererProfile.referals += 1;
-        refererProfile.balance += 5000;
-        await this.userRepository.save(toUserEntity(refererProfile));
-        await this.redis.set(`user:${referer}`, JSON.stringify(refererProfile));
-
-        user.referer = referer;
-        user.balance += 5000;
-        user.earnedByReferer += 5000;
-        await this.userRepository.save(toUserEntity(user));
-        await this.redis.set(`user:${userId}`, JSON.stringify(user));
+    if (user) {
+      // Проверка реферера, если у пользователя его еще нет
+      if (user.referer === '0' && referer) {
+        const refererProfile = await this.getUser(referer);
+        if (refererProfile) {
+          await this.updateRefererAndUserBalances(
+            user,
+            refererProfile,
+            referer,
+          );
+        }
       }
-    } else if (!user) {
-      user = {
-        personalRecord: 0,
-        id: userId,
-        referer,
-        energy: 10,
-        lastUpdated: Date.now(),
-        nickname: '',
-        remainingTime: 0,
-        selectedSkin: '',
-        selectedUpgrade: '',
-        settings: undefined,
-        balance: 5000,
-        referals: 0,
-        ownedUpgrades: [],
-        ownedSkins: ['0'],
-        completedTaskIds: [],
-        earnedMoney: 0,
-        earnedByReferer: 0,
-        ...restUserData,
-      };
 
-      await this.userRepository.save(toUserEntity(user));
-      await this.redis.set(`user:${userId}`, JSON.stringify(user));
-      await this.redis.hset(`user:${userId}:energy`, 'energy', '10');
-      await this.redis.hset(
-        `user:${userId}:energy`,
-        'lastUpdated',
-        Date.now().toString(),
+      // Проверка на наличие выбранных скина и апгрейда
+      if (!user.selectedSkin) {
+        const selections = await this.getUserSelections(userId);
+        user.selectedSkin = selections?.selectedSkin || 'defaultSkin';
+        await this.redis.hset(
+          `user:${userId}`,
+          'selectedSkin',
+          user.selectedSkin,
+        );
+      }
+
+      if (!user.selectedUpgrade) {
+        const selections = await this.getUserSelections(userId);
+        user.selectedUpgrade = selections?.selectedUpgrade || 'defaultUpgrade';
+        await this.redis.hset(
+          `user:${userId}`,
+          'selectedUpgrade',
+          user.selectedUpgrade,
+        );
+      }
+    } else {
+      // Создание нового пользователя с инициализацией выбранного скина и апгрейда
+      const selections = await this.getUserSelections(userId);
+      const selectedSkin = selections?.selectedSkin || 'defaultSkin';
+      const selectedUpgrade = selections?.selectedUpgrade || 'defaultUpgrade';
+
+      user = this.createNewUser(
+        userId,
+        referer,
+        selectedSkin,
+        selectedUpgrade,
+        userData.tgUserdata,
+        userData.registrationDate,
       );
+      await this.saveUserToDatabase(user);
+
+      // Инициализация настроек пользователя
       user.settings = await this.initializeUserSettings(userId);
 
       if (referer) {
         const refererProfile = await this.getUser(referer);
         if (refererProfile) {
-          refererProfile.referals += 1;
-          refererProfile.balance += 5000;
-          user.earnedByReferer += 5000;
-          await this.userRepository.save(toUserEntity(refererProfile));
-          await this.redis.set(
-            `user:${referer}`,
-            JSON.stringify(refererProfile),
+          await this.updateRefererAndUserBalances(
+            user,
+            refererProfile,
+            referer,
           );
         }
       }
     }
-    const selections = await this.getUserSelections(userId);
 
-    if (!user.selectedSkin) {
-      user.selectedSkin = selections?.selectedSkin || 'defaultSkin';
-      await this.redis.hset(
-        `user:${userId}`,
-        'selectedSkin',
-        user.selectedSkin,
-      );
-    }
-
-    if (!user.selectedUpgrade) {
-      user.selectedUpgrade = selections?.selectedUpgrade || 'defaultUpgrade';
-      await this.redis.hset(
-        `user:${userId}`,
-        'selectedUpgrade',
-        user.selectedUpgrade,
-      );
-    }
-
+    // Обновление оставшегося времени до следующей энергии
     user.remainingTime = await this.getRemainingTimeUntilNextEnergy(userId);
 
     return user;
+  }
+
+  private createNewUser(
+    userId: string,
+    referer: string,
+    selectedSkin: string,
+    selectedUpgrade: string,
+    tgUserdata: string,
+    registrationDate: string,
+  ): UserType {
+    return {
+      personalRecord: 0,
+      id: userId,
+      referer,
+      energy: 10,
+      lastUpdated: Date.now(),
+      nickname: '',
+      remainingTime: 0,
+      selectedSkin,
+      selectedUpgrade,
+      settings: undefined,
+      balance: 5000,
+      referals: 0,
+      ownedUpgrades: [],
+      ownedSkins: ['0'],
+      completedTaskIds: [],
+      earnedMoney: 0,
+      earnedByReferer: 0,
+      registrationDate: registrationDate,
+      tgUserdata: tgUserdata,
+    };
+  }
+
+  private async saveUserToDatabase(user: UserType) {
+    await Promise.all([
+      this.userRepository.save(toUserEntity(user)),
+      this.redis.set(`user:${user.id}`, JSON.stringify(user)),
+      this.redis.hset(`user:${user.id}:energy`, 'energy', '10'),
+      this.redis.hset(
+        `user:${user.id}:energy`,
+        'lastUpdated',
+        Date.now().toString(),
+      ),
+      this.redis.hset(`user:${user.id}`, 'selectedSkin', user.selectedSkin),
+      this.redis.hset(
+        `user:${user.id}`,
+        'selectedUpgrade',
+        user.selectedUpgrade,
+      ),
+    ]);
+  }
+
+  private async updateRefererAndUserBalances(
+    user: UserType,
+    refererProfile: UserType,
+    referer: string,
+  ) {
+    refererProfile.referals += 1;
+    refererProfile.balance += 5000;
+    user.referer = referer;
+    user.balance += 5000;
+    user.earnedByReferer += 5000;
+
+    await Promise.all([
+      this.userRepository.save(toUserEntity(refererProfile)),
+      this.userRepository.save(toUserEntity(user)),
+      this.redis.set(`user:${referer}`, JSON.stringify(refererProfile)),
+      this.redis.set(`user:${user.id}`, JSON.stringify(user)),
+    ]);
   }
 
   async saveUserSelections(
