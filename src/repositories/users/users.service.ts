@@ -2,17 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { InjectRedis } from '@nestjs-modules/ioredis';
-import { User } from './entity/user.entity';
-import Redis from 'ioredis';
-import { UserType } from './types/user.type';
-import { toUserType } from './utils/toUserType';
-import { toUserEntity } from './utils/toUserEntity';
-import { createUserType } from './types/createUser.type';
-
-import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { InjectRedis } from '@nestjs-modules/ioredis';
 import Redis from 'ioredis';
 import { User } from './entity/user.entity';
 import { UserType } from './types/user.type';
