@@ -261,11 +261,11 @@ export class UsersService {
     refererProfile: UserType,
     referer: string,
   ) {
-    refererProfile.referals += 1;
-    refererProfile.balance += 5000;
+    refererProfile.referals = Number(refererProfile.referals) + 1;
+    refererProfile.balance = Number(refererProfile.balance) + 5000;
     user.referer = referer;
-    user.balance += 5000;
-    user.earnedByReferer += 5000;
+    user.balance = Number(user.balance) + 5000;
+    user.earnedByReferer = Number(user.earnedByReferer) + 5000;
 
     await Promise.all([
       this.userRepository.save(toUserEntity(refererProfile)),
