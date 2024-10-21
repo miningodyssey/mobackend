@@ -184,18 +184,20 @@ export class UsersService {
 
   // Создание нового пользователя, если он не существует
   async createUserIfNotExists(
-    userId: string,
-    userData: createUserType,
+      userId: string,
+      userData: createUserType,
   ): Promise<UserType> {
     let { referer } = userData;
+
+    // Нельзя быть реферером самому себе
     if (referer === userId) {
-      referer = '0'; // Нельзя быть реферером самому себе
+      referer = '0'; // или любое другое значение, обозначающее отсутствие реферера
     }
 
     let user = await this.getUser(userId); // Проверяем, существует ли пользователь
 
     if (user) {
-
+      // Если пользователь уже существует
       if (!user.selectedSkin) {
         const selections = await this.getUserSelections(userId); // Получаем данные из Redis
         user.selectedSkin = selections.selectedSkin || 'defaultSkin'; // Устанавливаем значение по умолчанию
@@ -205,12 +207,22 @@ export class UsersService {
       }
 
       if (!user.selectedUpgrade) {
-        // Если улучшение не установлено
         const selections = await this.getUserSelections(userId); // Получаем данные из Redis
         user.selectedUpgrade = selections.selectedUpgrade || 'defaultUpgrade'; // Устанавливаем значение по умолчанию
         await this.redis.hset(`user:${userId}:selections`, {
           selectedUpgrade: user.selectedUpgrade,
         }); // Обновляем Redis
+      }
+
+      // Проверяем наличие реферера при авторизации
+      if (user.referer === '0' && referer && referer !== '0') {
+        const refererProfile = await this.getUser(referer);
+        if (refererProfile) {
+          // Обновляем реферера для уже существующего пользователя
+          user.referer = referer;
+          await this.updateRefererAndUserBalances(user, refererProfile, referer);
+          await this.saveUserToDatabase(user); // Сохраняем обновлённые данные
+        }
       }
     } else {
       // Если пользователя нет, создаём нового
@@ -219,29 +231,22 @@ export class UsersService {
       const selectedUpgrade = selections.selectedUpgrade || 'defaultUpgrade';
 
       user = this.createNewUser(
-        userId,
-        referer,
-        selectedSkin,
-        selectedUpgrade,
-        userData.tgUserdata,
-        userData.registrationDate,
+          userId,
+          referer,
+          selectedSkin,
+          selectedUpgrade,
+          userData.tgUserdata,
+          userData.registrationDate,
       );
 
-
       await this.saveUserToDatabase(user); // Сохраняем в базе данных и Redis
-
       user.settings = await this.initializeUserSettings(userId); // Инициализируем настройки пользователя
 
-    }
-
-    if (user.referer === '0' && referer) {
-      const refererProfile = await this.getUser(referer);
-      if (refererProfile) {
-        await this.updateRefererAndUserBalances(
-            user,
-            refererProfile,
-            referer,
-        );
+      if (referer && referer !== '0') {
+        const refererProfile = await this.getUser(referer);
+        if (refererProfile) {
+          await this.updateRefererAndUserBalances(user, refererProfile, referer);
+        }
       }
     }
 
@@ -249,6 +254,7 @@ export class UsersService {
 
     return user; // Возвращаем пользователя
   }
+
 
   private async updateRefererAndUserBalances(
     user: UserType,
