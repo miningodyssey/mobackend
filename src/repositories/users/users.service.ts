@@ -188,7 +188,7 @@ export class UsersService {
     userData: createUserType,
   ): Promise<UserType> {
     let { referer } = userData;
-
+    console.log(referer)
     if (referer === userId) {
       referer = '0'; // Нельзя быть реферером самому себе
     }
