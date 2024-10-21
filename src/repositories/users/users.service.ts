@@ -8,6 +8,7 @@ import { UserType } from './types/user.type';
 import { toUserType } from './utils/toUserType';
 import { toUserEntity } from './utils/toUserEntity';
 import { createUserType } from './types/createUser.type';
+import {Cron, CronExpression} from "@nestjs/schedule";
 
 @Injectable()
 export class UsersService {
@@ -536,5 +537,23 @@ export class UsersService {
         currentTime.toString(),
       );
     }
+  }
+  @Cron(CronExpression.EVERY_HOUR)
+  async updateGlobalTop() {
+    const users = await this.userRepository
+        .createQueryBuilder('user')
+        .select(['user.id', 'user.nickname', 'user.balance'])
+        .orderBy('user.balance', 'DESC')
+        .getMany();
+
+    // Очищаем старые данные глобального топа
+    await this.redis.del('globalTop');
+
+    // Добавляем актуальные данные в Redis
+    for (const user of users) {
+      const nicknameToUse = user.nickname || user.id;
+      await this.redis.zadd('globalTop', user.balance, nicknameToUse);
+    }
+
   }
 }

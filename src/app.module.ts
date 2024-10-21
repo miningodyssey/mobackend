@@ -15,9 +15,11 @@ import { ConfigModule } from '@nestjs/config';
 import {BullMQModule} from "./bullmq/bullmq.module";
 import {UsersModule} from "./repositories/users/users.module";
 import {TasksModule} from "./repositories/tasks/tasks.module";
+import {ScheduleModule} from "@nestjs/schedule";
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,
     }),
