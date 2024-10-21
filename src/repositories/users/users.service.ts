@@ -188,7 +188,6 @@ export class UsersService {
     userData: createUserType,
   ): Promise<UserType> {
     let { referer } = userData;
-    console.log(referer)
     if (referer === userId) {
       referer = '0'; // Нельзя быть реферером самому себе
     }
@@ -233,15 +232,16 @@ export class UsersService {
 
       user.settings = await this.initializeUserSettings(userId); // Инициализируем настройки пользователя
 
-      if (referer) {
-        const refererProfile = await this.getUser(referer);
-        if (refererProfile) {
-          await this.updateRefererAndUserBalances(
+    }
+
+    if (user.referer === '0' && referer) {
+      const refererProfile = await this.getUser(referer);
+      if (refererProfile) {
+        await this.updateRefererAndUserBalances(
             user,
             refererProfile,
             referer,
-          );
-        }
+        );
       }
     }
 
