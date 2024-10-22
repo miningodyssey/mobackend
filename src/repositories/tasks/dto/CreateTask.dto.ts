@@ -1,19 +1,26 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsString, IsInt, IsOptional, IsEnum } from 'class-validator';
 
 export class CreateTaskDto {
-  @IsNotEmpty()
-  @IsString()
-  reward: string;
+  @IsInt()
+  reward: number;
 
-  @IsNotEmpty()
   @IsString()
   taskDescription: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
-  imageLink: string;
+  imageLink?: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
-  taskLink: string;
+  taskLink?: string;
+
+  @IsEnum(['regular', 'daily', 'temporary'])
+  type: 'regular' | 'daily' | 'temporary';
+
+  @IsOptional()
+  startDate?: Date;
+
+  @IsOptional()
+  endDate?: Date;
 }

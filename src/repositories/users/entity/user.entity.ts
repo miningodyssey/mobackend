@@ -41,4 +41,7 @@ export class User {
 
   @Column({ type: 'decimal', default: 0 })
   earnedByReferer: number;
+
+  @Column({type: 'boolean', default: false})
+  admin: boolean;
 }
