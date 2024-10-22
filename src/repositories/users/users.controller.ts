@@ -44,7 +44,7 @@ export class UsersController {
     this.BullMqGetUpdateEnergyService = this.bullmqFactory.create('addEnergy');
     this.BullMqUpdateSettingsService =
       this.bullmqFactory.create('updateSetting');
-    this.BullMqUpdateSettingsService = this.bullmqFactory.create(
+    this.BullMqUpdateSelectionService = this.bullmqFactory.create(
       'updateCharacterSelection',
     );
   }
