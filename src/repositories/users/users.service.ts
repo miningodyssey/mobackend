@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import {BadRequestException, Injectable} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { InjectRedis } from '@nestjs-modules/ioredis';
@@ -176,11 +176,12 @@ export class UsersService {
       return updateData;
     } catch (error) {
       if (error.code === '23505') {
-        throw new Error('Nickname already in use');
+        throw new BadRequestException('Nickname already in use');
       }
       throw error;
     }
   }
+
 
   // Создание нового пользователя, если он не существует
   async createUserIfNotExists(
