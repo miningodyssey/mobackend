@@ -361,6 +361,10 @@ export class UsersService {
     pipeline.hset(key, 'selectedSkin', selectedSkin);
 
     await pipeline.exec();
+    return {
+      selectedUpgrade,
+      selectedSkin
+    }
   }
 
   async finishRunAndUpdateTop(
