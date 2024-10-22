@@ -16,6 +16,7 @@ export const toUserType = (user: User): UserType => {
         completedTaskIds,
         earnedMoney,
         earnedByReferer,
+        admin
     } = user;
     return {
         id,
@@ -31,6 +32,7 @@ export const toUserType = (user: User): UserType => {
         completedTaskIds,
         earnedMoney,
         earnedByReferer,
+        admin,
         selectedSkin: '',
         selectedUpgrade: '',
         settings: '',

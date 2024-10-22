@@ -17,5 +17,6 @@ export type UserType = {
   selectedUpgrade: string;
   selectedSkin: string;
   settings: any;
+  admin: boolean;
   remainingTime?: number;
 };

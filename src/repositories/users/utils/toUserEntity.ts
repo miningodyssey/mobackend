@@ -18,6 +18,7 @@ export const toUserEntity = (user: UserType): User => {
         completedTaskIds,
         earnedMoney,
         earnedByReferer,
+        admin
     }
         = user;
     return {
@@ -34,5 +35,6 @@ export const toUserEntity = (user: UserType): User => {
         completedTaskIds,
         earnedMoney,
         earnedByReferer,
+        admin
     };
 }
