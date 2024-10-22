@@ -300,6 +300,7 @@ export class UsersService {
       ownedUpgrades: [],
       ownedSkins: ['defaultSkin'],
       completedTaskIds: [],
+      admin: false,
       earnedMoney: 0,
       earnedByReferer: 0,
       registrationDate: registrationDate,
