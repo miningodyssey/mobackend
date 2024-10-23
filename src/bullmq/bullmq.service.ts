@@ -91,6 +91,7 @@ export class BullmqService {
           }
         } catch (e) {
           console.log('Error', e);
+          throw e;
         }
       },
       { connection: this.connection },

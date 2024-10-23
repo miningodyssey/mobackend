@@ -70,10 +70,14 @@ export class UsersController {
     @Param('id') userId: string,
     @Body() updateData: Partial<User>,
   ) {
-    return this.BullMqUpdateUserService.addJobWithResponse({
-      userId: userId,
-      updateData: updateData,
-    });
+    try {
+      return await this.BullMqUpdateUserService.addJobWithResponse({
+        userId: userId,
+        updateData: updateData,
+      });
+    } catch (error) {
+      throw new BadRequestException(error.message || 'Failed to update user');
+    }
   }
 
   @Get('top/:id')
