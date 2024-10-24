@@ -6,11 +6,11 @@ import {
   ParseIntPipe,
   Patch,
   Post,
-  UseGuards,
 } from '@nestjs/common';
 import { TasksService } from './tasks.service';
 import { CreateTaskDto } from './dto/CreateTask.dto';
 import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
+import { UseGuards } from '@nestjs/common';
 
 @Controller('tasks')
 @UseGuards(JwtAuthGuard)
@@ -30,10 +30,29 @@ export class TasksController {
 
   @Patch('complete/:id')
   async completeTask(
-    @Param('id', ParseIntPipe) taskId: string,
-    @Body('userId', ParseIntPipe) userId: string,
+      @Param('id', ParseIntPipe) taskId: string,
+      @Body('userId', ParseIntPipe) userId: string,
   ) {
     await this.tasksService.completeTask(userId, taskId);
     return { message: 'Task completed successfully' };
+  }
+
+  @Patch('progress/:taskId')
+  async updateTaskProgress(
+      @Param('taskId', ParseIntPipe) taskId: string,
+      @Body('userId', ParseIntPipe) userId: string,
+      @Body('increment', ParseIntPipe) increment: number,
+  ) {
+    await this.tasksService.updateTaskProgress(userId, taskId, increment);
+    return { message: 'Task progress updated successfully' };
+  }
+
+  @Get('progress/:userId/:taskId')
+  async getTaskProgress(
+      @Param('userId', ParseIntPipe) userId: string,
+      @Param('taskId', ParseIntPipe) taskId: string,
+  ) {
+    const progress = await this.tasksService.getTaskProgress(userId, taskId);
+    return { progress };
   }
 }

@@ -7,6 +7,10 @@ export class CreateTaskDto {
 
   @IsNotEmpty()
   @IsString()
+  taskTitle: string;
+
+  @IsNotEmpty()
+  @IsString()
   taskDescription: string;
 
   @IsOptional()

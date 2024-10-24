@@ -8,6 +8,10 @@ export class Task {
   @Column({ type: 'int', default: 500 })
   reward: number;
 
+  @Column({ type: 'text', default: 'Default title' })
+  taskTitle: string;
+
+
   @Column({ type: 'text', default: 'Default description' })
   taskDescription: string;
 
