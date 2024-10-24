@@ -26,6 +26,9 @@ export class Task {
   @Column({ type: 'int', nullable: true })
   endDate?: number;
 
+  @Column({ type: 'enum', enum: ['click', 'points', 'invite'], default: 'click' })
+  actionType: 'click' | 'points' | 'invite'; // Вид действия
+
   @Column({ type: 'int', default: 0 })
-  completionCount: number;
+  targetValue: number; // Целевое значение (например, количество кликов, очков или друзей)
 }

@@ -24,10 +24,8 @@ export class TasksService {
 
     const task = this.taskRepository.create({
       ...taskData,
-      // Преобразуем строку в Unix timestamp в секундах, если дата передана
       startDate: taskData.startDate ? Math.floor(new Date(taskData.startDate).getTime() / 1000) : null,
       endDate: taskData.endDate ? Math.floor(new Date(taskData.endDate).getTime() / 1000) : null,
-      completionCount: 0,
     });
 
     const savedTask = await this.taskRepository.save(task);
@@ -70,5 +68,32 @@ export class TasksService {
         await this.userRepository.save(user);
       }
     }
+  }
+  async updateTaskProgress(userId: string, taskId: string, increment: number) {
+    await this.redis.select(1);
+
+    const key = `user:${userId}:task:${taskId}:progress`;
+
+    let currentProgress = Number(await this.redis.get(key));
+    if (currentProgress) {
+      currentProgress = Number(currentProgress)
+    } else {
+      currentProgress = 0
+    }
+
+    const newProgress = currentProgress + increment;
+    await this.redis.set(key, newProgress);
+
+    const task = await this.taskRepository.findOne({ where: { id: taskId } });
+
+    if (task && newProgress >= task.targetValue) {
+      await this.redis.set(`user:${userId}:task:${taskId}:completed`, 'true');
+    }
+  }
+
+  async getTaskProgress(userId: string, taskId: string) {
+    const key = `user:${userId}:task:${taskId}:progress`;
+    const progress = await this.redis.get(key);
+    return progress ? parseInt(progress) : 0;
   }
 }
