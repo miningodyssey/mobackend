@@ -19,8 +19,10 @@ export class CreateTaskDto {
   type: 'regular' | 'daily' | 'temporary';
 
   @IsOptional()
-  startDate?: Date;
+  @IsString() // Принимаем дату как строку
+  startDate?: string;
 
   @IsOptional()
-  endDate?: Date;
+  @IsString() // Принимаем дату как строку
+  endDate?: string;
 }

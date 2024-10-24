@@ -24,7 +24,10 @@ export class TasksService {
 
     const task = this.taskRepository.create({
       ...taskData,
-      completionCount: 0
+      // Преобразуем строку в Unix timestamp в секундах, если дата передана
+      startDate: taskData.startDate ? Math.floor(new Date(taskData.startDate).getTime() / 1000) : null,
+      endDate: taskData.endDate ? Math.floor(new Date(taskData.endDate).getTime() / 1000) : null,
+      completionCount: 0,
     });
 
     const savedTask = await this.taskRepository.save(task);
@@ -32,6 +35,7 @@ export class TasksService {
     await this.redis.set(`task:${savedTask.id}`, JSON.stringify(savedTask));
     return savedTask;
   }
+
 
   async getAllTasks(userId: string): Promise<Task[]> {
     await this.redis.select(1);

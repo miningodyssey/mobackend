@@ -20,11 +20,11 @@ export class Task {
   @Column({ type: 'enum', enum: ['regular', 'daily', 'temporary'], default: 'regular' })
   type: 'regular' | 'daily' | 'temporary';
 
-  @Column({ type: 'timestamp', nullable: true })
-  startDate?: Date;
+  @Column({ type: 'int', nullable: true })
+  startDate?: number;
 
-  @Column({ type: 'timestamp', nullable: true })
-  endDate?: Date;
+  @Column({ type: 'int', nullable: true })
+  endDate?: number;
 
   @Column({ type: 'int', default: 0 })
   completionCount: number;
