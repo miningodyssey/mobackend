@@ -155,7 +155,7 @@ export class TasksService {
       // Проверяем, завершена ли задача для пользователя
       if (!user.completedTaskIds.includes(taskId)) {
         user.completedTaskIds.push(taskId);
-        user.balance += task.reward;
+        user.balance = Number(user.balance) + Number(task.reward);
         await this.userRepository.save(user);
       }
     }
