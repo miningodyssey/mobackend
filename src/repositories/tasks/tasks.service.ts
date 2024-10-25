@@ -38,8 +38,16 @@ export class TasksService {
     const lastDailyUpdate = await this.redis.get(lastDailyUpdateKey);
     const currentDate = new Date().toISOString().split('T')[0];
 
+    const taskKey = `user:${userId}:tasks`;
+    const userTasksData = await this.redis.hgetall(taskKey);
+
+    if (!userTasksData) {
+      await this.initializeTasksForNewUser(userId);
+    }
+
+    // Обнуление статуса выполнения и прогресса для ежедневных задач, если сменился день
     if (lastDailyUpdate !== currentDate) {
-      await this.initializeDailyTasksForUser(userId);
+      await this.resetDailyTasksProgress(userId);
       await this.redis.set(lastDailyUpdateKey, currentDate);
     }
 
@@ -54,8 +62,6 @@ export class TasksService {
         await this.redis.set('tasks', JSON.stringify(tasks));
       }
     }
-
-    const taskKey = `user:${userId}:tasks`;
 
     const tasksWithProgress = await Promise.all(tasks.map(async (task) => {
       const taskProgressData = await this.redis.hget(taskKey, task.id);
@@ -77,6 +83,20 @@ export class TasksService {
 
     return tasksWithProgress;
   }
+
+  private async resetDailyTasksProgress(userId: string) {
+    const dailyTasks = await this.taskRepository.find({ where: { type: 'daily' } });
+    const taskKey = `user:${userId}:tasks`;
+
+    for (const task of dailyTasks) {
+      const taskData = {
+        progress: 0,
+        completed: false,
+      };
+      await this.redis.hset(taskKey, task.id, JSON.stringify(taskData));
+    }
+  }
+
 
 
   private async initializeDailyTasksForUser(userId: string) {
