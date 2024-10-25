@@ -33,8 +33,7 @@ export class TasksService {
     return savedTask;
   }
 
-  async getAllTasks(userId: string): Promise<Task[]> {
-
+  async getAllTasks(userId: string): Promise<any[]> {
     const user = await this.usersService.getUser(userId);
     const completedTaskIds = user.completedTaskIds || [];
 
@@ -59,8 +58,29 @@ export class TasksService {
       }
     }
 
-    return tasks.filter((task) => !completedTaskIds.includes(task.id));
+    const taskKey = `user:${userId}:tasks`;
+
+    const tasksWithProgress = await Promise.all(tasks.map(async (task) => {
+      const taskProgressData = await this.redis.hget(taskKey, task.id);
+      let progress = 0;
+      let completed = false;
+
+      if (taskProgressData) {
+        const parsedProgress = JSON.parse(taskProgressData);
+        progress = parsedProgress.progress;
+        completed = parsedProgress.completed;
+      }
+
+      return {
+        ...task,
+        progress,
+        completed,
+      };
+    }));
+
+    return tasksWithProgress;
   }
+
 
   private async initializeDailyTasksForUser(userId: string) {
 

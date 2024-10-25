@@ -14,7 +14,7 @@ import * as process from 'process';
       useFactory: () => ({
         type: 'single',
         url: process.env.REDIS_CONNECTION,
-        db: 1
+        db: 0
       }),
     }),
   ],
