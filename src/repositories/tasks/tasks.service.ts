@@ -34,9 +34,6 @@ export class TasksService {
   }
 
   async getAllTasks(userId: string): Promise<any[]> {
-    const user = await this.usersService.getUser(userId);
-    const completedTaskIds = user.completedTaskIds || [];
-
     const lastDailyUpdateKey = `user:${userId}:lastDailyUpdate`;
     const lastDailyUpdate = await this.redis.get(lastDailyUpdateKey);
     const currentDate = new Date().toISOString().split('T')[0];
@@ -98,23 +95,17 @@ export class TasksService {
   }
 
 
-  async completeTask(userId: string, taskId: string) {
+  async updateAndCompleteTask(userId: string, taskId: string, increment: number) {
     const user = await this.userRepository.findOne({ where: { id: userId } });
     const task = await this.taskRepository.findOne({ where: { id: taskId } });
 
-    if (user && task) {
-      if (!user.completedTaskIds.includes(taskId)) {
-        user.completedTaskIds.push(taskId);
-        user.balance += task.reward;
-        await this.userRepository.save(user);
-      }
+    if (!user || !task) {
+      throw new Error('User or task not found');
     }
-  }
-
-  async updateTaskProgress(userId: string, taskId: string, increment: number) {
 
     const taskKey = `user:${userId}:tasks`;
 
+    // Получаем текущий прогресс задачи из Redis
     const taskData = await this.redis.hget(taskKey, taskId);
     let currentProgress = 0;
     let isCompleted = false;
@@ -127,28 +118,43 @@ export class TasksService {
       taskType = parsedTaskData.type;
     }
 
+    // Обновляем прогресс
     currentProgress += increment;
 
-    const task = await this.taskRepository.findOne({ where: { id: taskId } });
-    if (task && currentProgress >= task.targetValue) {
+    // Проверяем, достигнут ли целевой прогресс задачи
+    if (currentProgress >= task.targetValue) {
       isCompleted = true;
+      currentProgress = task.targetValue;
+
+      // Проверяем, завершена ли задача для пользователя
+      if (!user.completedTaskIds.includes(taskId)) {
+        user.completedTaskIds.push(taskId);
+        user.balance += task.reward;
+        await this.userRepository.save(user);
+      }
     }
 
-    // Если данные о задаче отсутствуют в Redis, получаем тип задачи из базы
-    if (!taskType && task) {
+    // Если данные о типе задачи отсутствуют в Redis, получаем их из задачи
+    if (!taskType) {
       taskType = task.type;
     }
 
+    // Обновляем прогресс задачи в Redis
     await this.redis.hset(
         taskKey,
         taskId,
         JSON.stringify({ progress: currentProgress, completed: isCompleted, type: taskType }),
     );
 
-    if (isCompleted) {
-      await this.redis.hset(taskKey, `${taskId}:completed`, 'true');
-    }
+    return {
+      taskId: task.id,
+      taskTitle: task.taskTitle,
+      progress: currentProgress,
+      completed: isCompleted,
+      userBalance: user.balance,
+    };
   }
+
 
 
   async getTaskProgress(userId: string, taskId: string) {

@@ -28,23 +28,14 @@ export class TasksController {
     return await this.tasksService.getAllTasks(userid);
   }
 
-  @Patch('complete/:id')
-  async completeTask(
-      @Param('id', ParseIntPipe) taskId: string,
-      @Body('userId', ParseIntPipe) userId: string,
-  ) {
-    await this.tasksService.completeTask(userId, taskId);
-    return { message: 'Task completed successfully' };
-  }
-
   @Patch('progress/:taskId')
-  async updateTaskProgress(
+  async updateAndCompleteTask(
       @Param('taskId', ParseIntPipe) taskId: string,
       @Body('userId', ParseIntPipe) userId: string,
       @Body('increment', ParseIntPipe) increment: number,
   ) {
-    await this.tasksService.updateTaskProgress(userId, taskId, increment);
-    return { message: 'Task progress updated successfully' };
+    const result = await this.tasksService.updateAndCompleteTask(userId, taskId, increment);
+    return { message: 'Task progress updated successfully', result };
   }
 
   @Get('progress/:userId/:taskId')
