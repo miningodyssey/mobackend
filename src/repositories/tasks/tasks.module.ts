@@ -17,7 +17,7 @@ import * as process from "process";
         url: process.env.REDIS_CONNECTION,
         db: 1
       }),
-    }),
+    }, 'tasks'),
     RedisModule.forRootAsync({
       useFactory: () => ({
         type: 'single',

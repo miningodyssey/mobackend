@@ -14,7 +14,7 @@ export class TasksService {
         private taskRepository: Repository<Task>,
         @InjectRepository(User)
         private userRepository: Repository<User>,
-        @InjectRedis() private readonly redis: Redis,
+        @InjectRedis('tasks') private readonly redis: Redis,
         @InjectRedis('users') private readonly userRedis: Redis,
     ) {
     }
