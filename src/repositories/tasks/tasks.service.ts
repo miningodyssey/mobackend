@@ -36,19 +36,24 @@ export class TasksService {
   async getAllTasks(userId: string): Promise<any[]> {
     const lastDailyUpdateKey = `user:${userId}:lastDailyUpdate`;
     const lastDailyUpdate = await this.redis.get(lastDailyUpdateKey);
-    const currentDate = new Date().toISOString().split('T')[0];
+    const currentDate = new Date();
 
+    // Инициализация ключа для задач пользователя
     const taskKey = `user:${userId}:tasks`;
     const userTasksData = await this.redis.hgetall(taskKey);
 
+    // Инициализация прогресса задач, если его нет
     if (!userTasksData) {
       await this.initializeTasksForNewUser(userId);
-    }
+    } else {
+      // Проверка времени последнего обновления
+      const lastUpdateDate = lastDailyUpdate ? new Date(lastDailyUpdate) : null;
 
-    // Обнуление статуса выполнения и прогресса для ежедневных задач, если сменился день
-    if (lastDailyUpdate !== currentDate) {
-      await this.resetDailyTasksProgress(userId);
-      await this.redis.set(lastDailyUpdateKey, currentDate);
+      // Если обновление не происходило более 24 часов, сбрасываем прогресс ежедневных задач
+      if (!lastUpdateDate || (currentDate.getTime() - lastUpdateDate.getTime()) >= 24 * 60 * 60 * 1000) {
+        await this.resetDailyTasksProgress(userId);
+        await this.redis.set(lastDailyUpdateKey, currentDate.toISOString()); // Обновляем дату последнего обновления
+      }
     }
 
     const cachedTasks = await this.redis.get('tasks');
@@ -83,6 +88,7 @@ export class TasksService {
 
     return tasksWithProgress;
   }
+
 
   private async resetDailyTasksProgress(userId: string) {
     const dailyTasks = await this.taskRepository.find({ where: { type: 'daily' } });
