@@ -20,7 +20,6 @@ export class TasksService {
   ) {}
 
   async createTask(taskData: CreateTaskDto) {
-    await this.redis.select(1);
 
     const task = this.taskRepository.create({
       ...taskData,
@@ -35,7 +34,6 @@ export class TasksService {
   }
 
   async getAllTasks(userId: string): Promise<Task[]> {
-    await this.redis.select(1);
 
     const user = await this.usersService.getUser(userId);
     const completedTaskIds = user.completedTaskIds || [];
@@ -65,7 +63,6 @@ export class TasksService {
   }
 
   private async initializeDailyTasksForUser(userId: string) {
-    await this.redis.select(1);
 
     const dailyTasks = await this.taskRepository.find({ where: { type: 'daily' } });
 
@@ -82,7 +79,6 @@ export class TasksService {
 
 
   async completeTask(userId: string, taskId: string) {
-    await this.redis.select(1);
     const user = await this.userRepository.findOne({ where: { id: userId } });
     const task = await this.taskRepository.findOne({ where: { id: taskId } });
 
@@ -96,7 +92,6 @@ export class TasksService {
   }
 
   async updateTaskProgress(userId: string, taskId: string, increment: number) {
-    await this.redis.select(1);
 
     const taskKey = `user:${userId}:tasks`;
 
