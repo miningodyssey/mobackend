@@ -9,6 +9,7 @@ import { toUserType } from './utils/toUserType';
 import { toUserEntity } from './utils/toUserEntity';
 import { createUserType } from './types/createUser.type';
 import {Cron, CronExpression} from "@nestjs/schedule";
+import {TasksService} from "../tasks/tasks.service";
 
 @Injectable()
 export class UsersService {
@@ -17,6 +18,7 @@ export class UsersService {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    private readonly tasksService: TasksService, // Инжектируем TasksService
     @InjectRedis() private readonly redis: Redis,
   ) {}
 

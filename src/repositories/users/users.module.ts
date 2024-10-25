@@ -1,15 +1,16 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { RedisModule } from '@nestjs-modules/ioredis';
 import { UsersService } from './users.service';
 import { User } from './entity/user.entity';
 import { UsersController } from './users.controller';
-import {BullmqFactory} from "../../bullmq/bullmq.factory";
+import { BullmqFactory } from "../../bullmq/bullmq.factory";
 import * as process from 'process';
+import { TasksModule } from "../tasks/tasks.module";
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User]), // Import entity
+    TypeOrmModule.forFeature([User]), // Импорт сущности User
     RedisModule.forRootAsync({
       useFactory: () => ({
         type: 'single',
@@ -17,6 +18,7 @@ import * as process from 'process';
         db: 0
       }),
     }),
+    TasksModule,
   ],
   controllers: [UsersController],
   providers: [UsersService, BullmqFactory],

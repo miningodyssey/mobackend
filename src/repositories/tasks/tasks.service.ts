@@ -15,8 +15,8 @@ export class TasksService {
       private taskRepository: Repository<Task>,
       @InjectRepository(User)
       private userRepository: Repository<User>,
-      private readonly usersService: UsersService,
       @InjectRedis() private readonly redis: Redis,
+      @InjectRedis('users') private readonly userRedis: Redis,
   ) {}
 
   async createTask(taskData: CreateTaskDto) {
@@ -156,6 +156,7 @@ export class TasksService {
       if (!user.completedTaskIds.includes(taskId)) {
         user.completedTaskIds.push(taskId);
         user.balance = Number(user.balance) + Number(task.reward);
+        this.userRedis.del(`user:${userId}`);
         await this.userRepository.save(user);
       }
     }
@@ -196,15 +197,11 @@ export class TasksService {
   }
 
   async initializeTasksForNewUser(userId: string) {
-    await this.redis.select(1);
 
-    // Получаем все активные задачи
     const activeTasks = await this.taskRepository.find();
 
-    // Создаем ключ для хранения задач пользователя
     const taskKey = `user:${userId}:tasks`;
 
-    // Инициализируем задачи с нулевым прогрессом, статусом "не выполнено" и типом задачи
     for (const task of activeTasks) {
       const taskData = {
         progress: 0,
