@@ -18,7 +18,7 @@ export class UsersService {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
-    private readonly tasksService: TasksService, // Инжектируем TasksService
+    private readonly tasksService: TasksService,
     @InjectRedis() private readonly redis: Redis,
   ) {}
 
@@ -223,6 +223,7 @@ export class UsersService {
         if (refererProfile) {
           // Обновляем реферера для уже существующего пользователя
           user.referer = referer;
+          this.tasksService.updateProgressForInvite(referer);
           await this.updateRefererAndUserBalances(user, refererProfile, referer);
           await this.saveUserToDatabase(user); // Сохраняем обновлённые данные
         }
@@ -248,6 +249,7 @@ export class UsersService {
       if (referer && referer !== '0') {
         const refererProfile = await this.getUser(referer);
         if (refererProfile) {
+          this.tasksService.updateProgressForInvite(referer);
           await this.updateRefererAndUserBalances(user, refererProfile, referer);
         }
       }
@@ -379,7 +381,7 @@ export class UsersService {
 
     user.balance += coinsEarned;
     await this.userRepository.save(toUserEntity(user));
-
+    await this.tasksService.updateProgressForRun(userId, coinsEarned);
     if (user.referer !== '0') {
       const referer = await this.getUser(user.referer);
       const refererBonus = coinsEarned * 0.1;
