@@ -28,6 +28,7 @@ export class TasksService {
         });
 
         const savedTask = await this.taskRepository.save(task);
+        await this.redis.del('tasks');
 
         await this.redis.set(`task:${savedTask.id}`, JSON.stringify(savedTask));
         return savedTask;
