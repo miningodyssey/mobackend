@@ -11,7 +11,6 @@ export class Task {
   @Column({ type: 'text', default: 'Default title' })
   taskTitle: string;
 
-
   @Column({ type: 'text', default: 'Default description' })
   taskDescription: string;
 
