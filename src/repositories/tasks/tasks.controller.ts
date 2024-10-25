@@ -24,15 +24,15 @@ export class TasksController {
   }
 
   @Get('get/:userid')
-  async getAllTasks(@Param('userid', ParseIntPipe) userid: string) {
+  async getAllTasks(@Param('userid') userid: string) {
     return await this.tasksService.getAllTasks(userid);
   }
 
   @Patch('progress/:taskId')
   async updateAndCompleteTask(
-      @Param('taskId', ParseIntPipe) taskId: string,
-      @Body('userId', ParseIntPipe) userId: string,
-      @Body('increment', ParseIntPipe) increment: number,
+      @Param('taskId') taskId: string,
+      @Body('userId') userId: string,
+      @Body('increment') increment: number,
   ) {
     const result = await this.tasksService.updateAndCompleteTask(userId, taskId, increment);
     return { message: 'Task progress updated successfully', result };
@@ -40,8 +40,8 @@ export class TasksController {
 
   @Get('progress/:userId/:taskId')
   async getTaskProgress(
-      @Param('userId', ParseIntPipe) userId: string,
-      @Param('taskId', ParseIntPipe) taskId: string,
+      @Param('userId') userId: string,
+      @Param('taskId') taskId: string,
   ) {
     const progress = await this.tasksService.getTaskProgress(userId, taskId);
     return { progress };
