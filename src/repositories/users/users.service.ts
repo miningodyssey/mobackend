@@ -296,7 +296,7 @@ export class UsersService {
     registrationDate: string,
   ): UserType {
     let energy = 0
-    if (referer) {
+    if (referer !== '0') {
       energy = 1
     }
     return {
