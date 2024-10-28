@@ -227,7 +227,7 @@ export class UsersService {
       if (user.referer === '0' && referer && referer !== '0') {
         const refererProfile = await this.getUser(referer);
         if (refererProfile) {
-          // Обновляем реферера для уже существующего пользователя
+          await this.manuallyAddEnergy(userId, 1)
           user.referer = referer;
           this.tasksService.updateProgressForInvite(referer);
           await this.updateRefererAndUserBalances(user, refererProfile, referer);
