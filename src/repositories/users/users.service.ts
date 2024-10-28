@@ -231,6 +231,7 @@ export class UsersService {
             'energy',
             '1',
         );
+        console.log('energy added')
         if (refererProfile) {
           user.referer = referer;
           this.tasksService.updateProgressForInvite(referer);
