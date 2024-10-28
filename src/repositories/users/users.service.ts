@@ -13,7 +13,7 @@ import {TasksService} from "../tasks/tasks.service";
 
 @Injectable()
 export class UsersService {
-  private readonly ENERGY_LIMIT = 10;
+  private readonly ENERGY_LIMIT = 1;
 
   constructor(
     @InjectRepository(User)
@@ -102,10 +102,11 @@ export class UsersService {
       userType = JSON.parse(cachedUser as string);
 
       if (!energyData || Object.keys(energyData as object).length === 0) {
+        const energy = userType.referer ? '1' : '0'
         await this.redis.hset(
           energyKey,
           'energy',
-          '10',
+          energy,
           'lastUpdated',
           Date.now().toString(),
         );
@@ -114,7 +115,9 @@ export class UsersService {
           lastEnergyUpdate && typeof lastEnergyUpdate === 'string'
             ? parseInt(lastEnergyUpdate as string, 10)
             : Date.now();
+/*
         await this.updateEnergy(userId, lastUpdatedTime);
+*/
       }
 
       userType.energy = parseInt(
@@ -141,19 +144,22 @@ export class UsersService {
 
       const energyDataExists = await this.redis.hgetall(energyKey);
       if (!energyDataExists || Object.keys(energyDataExists).length === 0) {
+        const energy = userType.referer ? '1' : '0'
         await this.redis.hset(
-          energyKey,
-          'energy',
-          '10',
-          'lastUpdated',
-          Date.now().toString(),
+            energyKey,
+            'energy',
+            energy,
+            'lastUpdated',
+            Date.now().toString(),
         );
       } else {
         const lastUpdatedTime =
           lastEnergyUpdate && typeof lastEnergyUpdate === 'string'
             ? parseInt(lastEnergyUpdate as string, 10)
             : Date.now();
+/*
         await this.updateEnergy(userId, lastUpdatedTime);
+*/
       }
 
       userType.energy = parseInt(
@@ -289,11 +295,15 @@ export class UsersService {
     tgUserdata: string,
     registrationDate: string,
   ): UserType {
+    let energy = 0
+    if (referer) {
+      energy = 1
+    }
     return {
       personalRecord: 0,
       id: userId,
       referer,
-      energy: 10,
+      energy: energy,
       lastUpdated: Date.now(),
       nickname: '',
       remainingTime: 0,
