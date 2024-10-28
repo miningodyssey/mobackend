@@ -226,7 +226,11 @@ export class UsersService {
       // Проверяем наличие реферера при авторизации
       if (user.referer === '0' && referer && referer !== '0') {
         const refererProfile = await this.getUser(referer);
-        await this.manuallyAddEnergy(userId, 1)
+        await this.redis.hset(
+            `user:${userId}:energy`,
+            'energy',
+            '1',
+        );
         if (refererProfile) {
           user.referer = referer;
           this.tasksService.updateProgressForInvite(referer);
@@ -432,7 +436,6 @@ export class UsersService {
 
     const currentEnergy = parseInt(energyData.energy, 10);
     const newEnergy = Math.min(currentEnergy + amount, this.ENERGY_LIMIT);
-    console.log(newEnergy)
     const updateDate = Date.now().toString();
     await this.redis.hset(
       `user:${userId}:energy`,
