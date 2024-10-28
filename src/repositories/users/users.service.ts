@@ -102,7 +102,7 @@ export class UsersService {
       userType = JSON.parse(cachedUser as string);
 
       if (!energyData || Object.keys(energyData as object).length === 0) {
-        const energy = userType.referer ? '1' : '0'
+        const energy = (userType.referer === '0') ? '0' : '1'
         await this.redis.hset(
           energyKey,
           'energy',
@@ -144,7 +144,7 @@ export class UsersService {
 
       const energyDataExists = await this.redis.hgetall(energyKey);
       if (!energyDataExists || Object.keys(energyDataExists).length === 0) {
-        const energy = userType.referer ? '1' : '0'
+        const energy = (userType.referer === '0') ? '0' : '1'
         await this.redis.hset(
             energyKey,
             'energy',
