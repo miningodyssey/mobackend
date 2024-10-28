@@ -305,7 +305,7 @@ export class UsersService {
       referer,
       energy: energy,
       lastUpdated: Date.now(),
-      nickname: '',
+      nickname: userId,
       remainingTime: 0,
       selectedSkin,
       selectedUpgrade,
