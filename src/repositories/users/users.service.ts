@@ -432,6 +432,7 @@ export class UsersService {
 
     const currentEnergy = parseInt(energyData.energy, 10);
     const newEnergy = Math.min(currentEnergy + amount, this.ENERGY_LIMIT);
+    console.log(newEnergy)
     const updateDate = Date.now().toString();
     await this.redis.hset(
       `user:${userId}:energy`,
