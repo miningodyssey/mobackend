@@ -437,7 +437,7 @@ export class UsersService {
     await this.redis.hset(
       `user:${userId}:energy`,
       'energy',
-      newEnergy.toString(),
+      newEnergy,
     );
     await this.redis.hset(`user:${userId}:energy`, 'lastUpdated', updateDate); // Обновляем время
 
