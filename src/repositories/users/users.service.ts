@@ -226,14 +226,9 @@ export class UsersService {
       // Проверяем наличие реферера при авторизации
       if (user.referer === '0' && referer && referer !== '0') {
         const refererProfile = await this.getUser(referer);
-        await this.redis.hset(
-            `user:${userId}:energy`,
-            'energy',
-            '1',
-        );
-        console.log('energy added')
         if (refererProfile) {
           user.referer = referer;
+          user.energy = (await this.manuallyAddEnergy(userId, 1)).energy
           this.tasksService.updateProgressForInvite(referer);
           await this.updateRefererAndUserBalances(user, refererProfile, referer);
           await this.saveUserToDatabase(user); // Сохраняем обновлённые данные

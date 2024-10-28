@@ -6,8 +6,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     cors: {
       origin: '*',
-    },
-    logger: ['error', 'warn'],
+    }
   });
   const options = new DocumentBuilder()
     .setTitle('Mining Odyssey API')
