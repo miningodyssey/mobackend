@@ -330,9 +330,11 @@ export class UsersService {
     await Promise.all([
       this.redis.set(`user:${user.id}`, JSON.stringify(user)),
       this.redis.hset(
-        `user:${user.id}:energy`,
-        'lastUpdated',
-        Date.now().toString(),
+          `user:${user.id}:energy`,
+          'energy',
+          user.energy.toString(),
+          'lastUpdated',
+          Date.now().toString(),
       ),
     ]);
   }
