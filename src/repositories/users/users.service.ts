@@ -394,6 +394,9 @@ export class UsersService {
 
         user.balance = Number(user.balance) + coinsEarned;
         user.earnedMoney = Number(user.earnedMoney) + coinsEarned
+        if (user.personalRecord < coinsEarned) {
+            user.personalRecord = Number(coinsEarned)
+        }
         await this.userRepository.save(toUserEntity(user));
         await this.tasksService.updateProgressForRun(userId, coinsEarned);
         if (user.referer !== '0') {
