@@ -101,12 +101,12 @@
       });
     }
 
-    @Post('updatetop/:id')
+    @Get('updatetop/:id')
     async updateTopAfterRun(
       @Param('id') userId: string,
       @Body('coins') coinsEarned: number,
     ) {
-      await this.BullMqGetUpdateTopService.addJob({
+      return await this.BullMqGetUpdateTopService.addJobWithResponse({
         userId: userId,
         coinsEarned: coinsEarned,
       });
