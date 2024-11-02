@@ -101,7 +101,7 @@
       });
     }
 
-    @Get('updatetop/:id')
+    @Put('updatetop/:id')
     async updateTopAfterRun(
       @Param('id') userId: string,
       @Body('coins') coinsEarned: number,
