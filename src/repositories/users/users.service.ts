@@ -389,7 +389,7 @@ export class UsersService {
     async finishRunAndUpdateTop(
         userId: string,
         coinsEarned: number,
-    ): Promise<void> {
+    ): Promise<UserType> {
         const user = await this.getUser(userId);
 
         user.balance = Number(user.balance) + coinsEarned;
