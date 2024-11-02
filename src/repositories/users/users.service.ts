@@ -402,8 +402,8 @@ export class UsersService {
         if (user.referer !== '0') {
             const referer = await this.getUser(user.referer);
             const refererBonus = coinsEarned * 0.1;
-            user.earnedByReferer = Number(user.earnedByReferer) + refererBonus
-            referer.balance += refererBonus;
+            user.earnedByReferer = Number(user.earnedByReferer) + Number(refererBonus)
+            referer.balance = Number(referer.balance) + Number(refererBonus);
             await this.userRepository.save(toUserEntity(referer));
             await this.redis.set(`user:${referer.id}`, JSON.stringify(referer));
         }
