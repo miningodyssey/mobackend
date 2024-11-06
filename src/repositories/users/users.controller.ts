@@ -13,6 +13,7 @@
   import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
   import { BullmqFactory } from '../../bullmq/bullmq.factory';
   import { BullmqService } from '../../bullmq/bullmq.service';
+  import {UpdateTopDto} from "./dto/updateTop.dto";
 
   @Controller('users')
   @UseGuards(JwtAuthGuard)
@@ -103,12 +104,14 @@
 
     @Put('updatetop/:id')
     async updateTopAfterRun(
-      @Param('id') userId: string,
-      @Body('coins') coinsEarned: number,
+        @Param('id') userId: string,
+        @Body() updateTopDto: UpdateTopDto,
     ) {
+      const { coins, record } = updateTopDto;
       return await this.BullMqGetUpdateTopService.addJobWithResponse({
         userId: userId,
-        coinsEarned: coinsEarned,
+        coinsEarned: coins,
+        record: record,
       });
     }
 

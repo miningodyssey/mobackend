@@ -389,13 +389,14 @@ export class UsersService {
     async finishRunAndUpdateTop(
         userId: string,
         coinsEarned: number,
+        record: number,
     ): Promise<UserType> {
         const user = await this.getUser(userId);
 
         user.balance = Number(user.balance) + coinsEarned;
         user.earnedMoney = Number(user.earnedMoney) + coinsEarned
-        if (user.personalRecord < coinsEarned) {
-            user.personalRecord = Number(coinsEarned)
+        if (user.personalRecord < record) {
+            user.personalRecord = Number(record)
         }
         await this.userRepository.save(toUserEntity(user));
         await this.tasksService.updateProgressForRun(userId, coinsEarned);

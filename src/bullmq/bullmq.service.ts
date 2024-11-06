@@ -69,6 +69,7 @@ export class BullmqService {
               return await this.usersService.finishRunAndUpdateTop(
                 job.data.userId,
                 job.data.coinsEarned,
+                job.data.record,
               );
             case 'addEnergy':
               return await this.usersService.manuallyAddEnergy(
