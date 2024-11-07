@@ -34,8 +34,9 @@ export class UsersService {
     // Инициализация настроек пользователя
     async initializeUserSettings(userId: string) {
         const defaultSettings = {
-            theme: 'light',
-            notificationsEnabled: 'true',
+            graphicsQuality: 50,
+            antiAliasingEnabled: true,
+            textureResolution: 50,
         };
 
         const key = `user:${userId}:settings`;
