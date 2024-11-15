@@ -14,8 +14,11 @@ export type UserType = {
   completedTaskIds: string[];
   earnedMoney: number;
   earnedByReferer: number;
-  selectedUpgrade: string;
+  selectedWagon: string;
   selectedSkin: string;
+  selectedSlideObstacle: string;
+  selectedJumpObstacle: string;
+  selectedRoad: string;
   settings: any;
   admin: boolean;
   remainingTime?: number;

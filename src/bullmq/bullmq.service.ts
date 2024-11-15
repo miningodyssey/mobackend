@@ -84,8 +84,13 @@ export class BullmqService {
             case 'updateCharacterSelection':
               return await this.usersService.saveUserSelections(
                 job.data.userId,
-                job.data.selectedUpgrade,
-                job.data.selectedSkin,
+                {
+                  selectedSkin: job.data.selectedSkin,
+                  selectedWagon: job.data.selectedWagon,
+                  selectedRoad: job.data.selectedRoad,
+                  selectedSlideObstacle: job.data.selectedSlideObstacle,
+                  selectedJumpObstacle: job.data.selectedJumpObstacle,
+                },
               );
             default:
               throw new Error('Unknown job type');
