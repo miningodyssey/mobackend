@@ -229,7 +229,7 @@ export class UsersService {
       if (!user.selectedJumpObstacle) {
         const selections = await this.getUserSelections(userId); // Получаем данные из Redis
         user.selectedJumpObstacle =
-          selections.selectedRoad || 'defaultJumpObstacle'; // Устанавливаем значение по умолчанию
+          selections.selectedJumpObstacle || 'defaultJumpObstacle'; // Устанавливаем значение по умолчанию
         await this.redis.hset(`user:${userId}:selections`, {
           selectedJumpObstacle: user.selectedJumpObstacle,
         }); // Обновляем Redis
@@ -238,7 +238,7 @@ export class UsersService {
       if (!user.selectedSlideObstacle) {
         const selections = await this.getUserSelections(userId); // Получаем данные из Redis
         user.selectedSlideObstacle =
-          selections.selectedRoad || 'defaultSlideObstacle'; // Устанавливаем значение по умолчанию
+          selections.selectedSlideObstacle || 'defaultSlideObstacle'; // Устанавливаем значение по умолчанию
         await this.redis.hset(`user:${userId}:selections`, {
           selectedSlideObstacle: user.selectedSlideObstacle,
         }); // Обновляем Redis
@@ -246,7 +246,7 @@ export class UsersService {
 
       if (!user.selectedWagon) {
         const selections = await this.getUserSelections(userId); // Получаем данные из Redis
-        user.selectedWagon = selections.selectedRoad || 'defaultWagon'; // Устанавливаем значение по умолчанию
+        user.selectedWagon = selections.selectedWagon || 'defaultWagon'; // Устанавливаем значение по умолчанию
         await this.redis.hset(`user:${userId}:selections`, {
           selectedWagon: user.selectedWagon,
         }); // Обновляем Redis
