@@ -37,7 +37,7 @@ export class User {
   ownedJumpObstacles: string[];
 
   @Column({ type: 'simple-array', nullable: true })
-  ownedRoad: string[];
+  ownedRoads: string[];
 
   @Column({ type: 'decimal', default: 0 })
   personalRecord: number;
