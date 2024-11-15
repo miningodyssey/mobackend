@@ -7,7 +7,10 @@ export type UserType = {
   referer: string;
   energy: number;
   tgUserdata?: string; // nullable
-  ownedUpgrades: string[];
+  ownedWagons: string[];
+  ownedSlideObstacles: string[];
+  ownedJumpObstacles: string[];
+  ownedRoads: string[];
   ownedSkins: string[];
   lastUpdated: number;
   personalRecord: number;

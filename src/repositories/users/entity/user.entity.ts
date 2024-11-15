@@ -25,10 +25,19 @@ export class User {
   tgUserdata: string;
 
   @Column({ type: 'simple-array', nullable: true })
-  ownedUpgrades: string[];
+  ownedSkins: string[];
 
   @Column({ type: 'simple-array', nullable: true })
-  ownedSkins: string[];
+  ownedWagons: string[];
+
+  @Column({ type: 'simple-array', nullable: true })
+  ownedSlideObstacles: string[];
+
+  @Column({ type: 'simple-array', nullable: true })
+  ownedJumpObstacles: string[];
+
+  @Column({ type: 'simple-array', nullable: true })
+  ownedselectedRoad: string[];
 
   @Column({ type: 'decimal', default: 0 })
   personalRecord: number;
@@ -42,6 +51,6 @@ export class User {
   @Column({ type: 'decimal', default: 0 })
   earnedByReferer: number;
 
-  @Column({type: 'boolean', default: false})
+  @Column({ type: 'boolean', default: false })
   admin: boolean;
 }
