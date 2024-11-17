@@ -24,19 +24,19 @@ export class User {
   @Column({ nullable: true })
   tgUserdata: string;
 
-  @Column({ type: 'simple-array', nullable: true })
+  @Column({ type: 'simple-array', default: 'Default Skin' })
   ownedSkins: string[];
 
-  @Column({ type: 'simple-array', nullable: true })
+  @Column({ type: 'simple-array', default: 'Default Wagon' })
   ownedWagons: string[];
 
-  @Column({ type: 'simple-array', nullable: true })
+  @Column({ type: 'simple-array', default: 'Default' })
   ownedSlideObstacles: string[];
 
-  @Column({ type: 'simple-array', nullable: true })
+  @Column({ type: 'simple-array', default: 'Default' })
   ownedJumpObstacles: string[];
 
-  @Column({ type: 'simple-array', nullable: true })
+  @Column({ type: 'simple-array', default: 'Default Road' })
   ownedRoads: string[];
 
   @Column({ type: 'decimal', default: 0 })
