@@ -144,7 +144,7 @@ export class UsersController {
   @Put(':id/selection')
   async updateUserSelection(
     @Param('id') userId: string,
-    @Body() newSelection: Record<string, string>,
+      @Body() newSelection: Record<string, string>,
   ) {
     try {
       return await this.BullMqUpdateSelectionService.addJobWithResponse({

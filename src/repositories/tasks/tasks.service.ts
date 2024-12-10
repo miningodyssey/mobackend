@@ -14,8 +14,7 @@ export class TasksService {
         private taskRepository: Repository<Task>,
         @InjectRepository(User)
         private userRepository: Repository<User>,
-        @InjectRedis('tasks') private readonly redis: Redis,
-        @InjectRedis('users') private readonly userRedis: Redis,
+        @InjectRedis() private readonly redis: Redis,
     ) {
     }
 
@@ -156,7 +155,7 @@ export class TasksService {
             if (!user.completedTaskIds.includes(taskId)) {
                 user.completedTaskIds.push(taskId);
                 user.balance = Number(user.balance) + Number(task.reward);
-                this.userRedis.del(`user:${userId}`);
+                this.redis.del(`user:${userId}`);
                 await this.userRepository.save(user);
             }
         }
