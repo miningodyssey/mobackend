@@ -25,15 +25,15 @@ import {ScheduleModule} from "@nestjs/schedule";
     }),
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: process.env.DATABASE_HOST,
-      port: Number(process.env.DATABASE_PORT),
-      username: process.env.DATABASE_USER,
-      password: process.env.DATABASE_PASSWORD,
-      database: process.env.DATABASE_NAME,
+      host: 'aws-0-eu-central-1.pooler.supabase.com',
+      port: 6543,
+      username: 'postgres.acempxsfvhqcfbqppkpq',
+      password: "3!?sKWic58?kS+", // Задайте пароль через переменные окружения
+      database: 'postgres',
       entities: [User, Task],
       synchronize: true,
       ssl: {
-        rejectUnauthorized: false,  // Для продакшена убедитесь, что сертификаты доверены
+        rejectUnauthorized: false, // Для продакшена настройте более безопасные параметры
       },
     }),
     TypeOrmModule.forFeature([User, Task]),
